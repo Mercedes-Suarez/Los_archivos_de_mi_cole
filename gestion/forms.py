@@ -1,13 +1,14 @@
+# gestion/forms.py
 from django import forms
 from .models import Archivo
 
 class ArchivoForm(forms.ModelForm):
     class Meta:
         model = Archivo
-        fields = ['nombre', 'tipo', 'ruta', 'trimestre']
+        fields = ['archivo', 'asignatura', 'trimestre']
 
-    def clean_nombre(self):
-        nombre = self.cleaned_data.get('nombre')
-        if " " in nombre:
-            raise forms.ValidationError("El nombre no debe tener espacios")
-        return nombre
+    def clean_archivo(self):
+        archivo = self.cleaned_data.get('archivo')
+        if archivo.size > 10*1024*1024:  # 10MB
+            raise forms.ValidationError("El archivo es demasiado grande.")
+        return archivo

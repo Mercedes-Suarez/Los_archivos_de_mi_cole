@@ -1,8 +1,8 @@
 from django.urls import path
-from . import views
+from .views import ArchivoListView, ArchivoCreateView, ArchivoDeleteView
 
 urlpatterns = [
-    path('', views.archivo_list, name='archivo_list'),
-    path('crear/', views.archivo_create, name='archivo_create'),
-    path('eliminar/<int:pk>/', views.archivo_delete, name='archivo_delete'),
+    path('archivos/', ArchivoListView.as_view(), name='archivo-list'),
+    path('archivos/nuevo/', ArchivoCreateView.as_view(), name='archivo-create'),
+    path('archivos/borrar/<int:pk>/', ArchivoDeleteView.as_view(), name='archivo-delete'),
 ]
