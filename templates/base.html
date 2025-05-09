@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Mi Cole{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <header><h1>Los Archivos de mi Cole</h1></header>
+    <main>{% block content %}{% endblock %}</main>
+    <script src="{% static 'js/app.js' %}"></script>
+</body>
+</html>
