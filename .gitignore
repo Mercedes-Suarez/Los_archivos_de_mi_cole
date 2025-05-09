@@ -1,0 +1,19 @@
+# Ignora entornos virtuales
+env/
+.venv/
+
+# Archivos de caché de Python
+__pycache__/
+*.pyc
+
+# Archivos de base de datos
+*.sqlite3
+
+# Archivos temporales o generados
+/media/
+staticfiles/
+*.log
+
+# Archivos del sistema
+*.DS_Store
+Thumbs.db
