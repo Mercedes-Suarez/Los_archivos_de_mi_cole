@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block title %}Eliminar Archivo{% endblock %}
+
+{% block content %}
+<h2>¿Estás seguro de que quieres eliminar "{{ archivo.nombre }}"?</h2>
+<form method="post">
+    {% csrf_token %}
+    <button type="submit">Sí, eliminar</button>
+    <a href="{% url 'archivo_list' %}">Cancelar</a>
+</form>
+{% endblock %}

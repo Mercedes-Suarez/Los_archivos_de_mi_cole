@@ -6,8 +6,16 @@
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
-    <header><h1>Los Archivos de mi Cole</h1></header>
-    <main>{% block content %}{% endblock %}</main>
+
+    <header>
+        <h1>Los Archivos de mi Cole</h1>
+        <hr>
+    </header>
+
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
     <script src="{% static 'js/app.js' %}"></script>
 </body>
 </html>
