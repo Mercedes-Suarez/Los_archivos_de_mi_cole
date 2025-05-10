@@ -7,10 +7,11 @@ class Usuario(AbstractUser):
     pass
 
 class Asignatura(models.Model):
-    nombre = models.CharField(max_length=255, default="Sin nombre")
+
+    nombre = models.CharField(max_length=100, default="Sin nombre")
    
     def __str__(self):
-        return f"{self.nombre} - {self.curso}"
+        return f"{self.nombre}"
 
 class Archivo(models.Model):
     TRIMESTRES = [(1, '1º Trimestre'), (2, '2º Trimestre'), (3, '3º Trimestre'), (4, 'Vacaciones'),]
