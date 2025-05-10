@@ -4,7 +4,31 @@
 
 {% block content %}
 <h2>Listado de Archivos</h2>
-<a href="{% url 'archivo_create' %}">Subir nuevo archivo</a>
+{% if user.is_staff %}
+    <a href="{% url 'archivo_create' %}">Subir nuevo archivo</a>
+{% endif %}
+<p>Sesión iniciada como: {{ user.username }}</p>
+<a href="{% url 'logout' %}">Cerrar sesión</a>
+<form method="get">
+    <label>Asignatura:</label>
+    <select name="asignatura">
+        <option value="">Todas</option>
+        {% for asignatura in asignaturas %}
+            <option value="{{ asignatura.id }}">{{ asignatura.nombre }}</option>
+        {% endfor %}
+    </select>
+
+    <label>Trimestre:</label>
+    <select name="trimestre">
+        <option value="">Todos</option>
+        <option value="1">1º Trimestre</option>
+        <option value="2">2º Trimestre</option>
+        <option value="3">3º Trimestre</option>
+        <option value="4"> * Vacaciones</option>
+    </select>
+
+    <button type="submit">Filtrar</button>
+</form>
 <table border="1" cellspacing="0" cellpadding="5">
     <tr>
         <th>Nombre de archivo</th>
@@ -15,7 +39,7 @@
     </tr>
     {% for archivo in archivos %}
     <tr>
-        <td><a href="{{ archivo.archivo.url }}" target="_blank">{{ archivo.archivo.name|cut:"archivos/" }}</a></td>
+        <td><a href="{{ archivo.archivo.url }}" target="_blank">{{ archivo.archivo.name|slice:"10:" }}</a></td>
         <td>{{ archivo.asignatura }}</td>
         <td>{{ archivo.get_trimestre_display }}</td>
         <td>{{ archivo.subido_por }}</td>

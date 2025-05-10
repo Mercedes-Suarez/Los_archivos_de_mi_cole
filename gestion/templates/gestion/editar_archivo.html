@@ -1,0 +1,7 @@
+<!-- templates/gestion/editar_archivo.html -->
+<h2>Editar archivo</h2>
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Guardar cambios</button>
+</form>

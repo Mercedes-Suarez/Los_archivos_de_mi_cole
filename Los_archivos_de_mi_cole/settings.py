@@ -132,6 +132,15 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 TEMPLATES[0]['DIRS'] = [BASE_DIR / 'templates']
 
+# https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Redirección después de login
+LOGIN_REDIRECT_URL = '/'  # Página a la que será redirigido el usuario después de iniciar sesión
+
+# Redirección después de logout
+LOGOUT_REDIRECT_URL = '/'  # Página a la que será redirigido el usuario después de hacer logout
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 

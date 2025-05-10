@@ -11,8 +11,18 @@
         <h1>Los Archivos de Mi Cole</h1>
         <nav>
             <a href="{% url 'archivo_list' %}">Inicio</a>
-            <a href="{% url 'archivo_create' %}">Subir Archivo</a>
+            {% if user.is_staff %}
+             <a href="{% url 'archivo_create' %}">Subir archivo</a>
+            {% endif %}
             <a href="{% url 'archivo_list' %}">Ver archivos</a>
+            
+            {% if user.is_authenticated %}
+                <!-- Mostrar el enlace de logout si el usuario está autenticado -->
+                <a href="{% url 'logout' %}">Cerrar sesión</a>
+            {% else %}
+                <!-- Mostrar el enlace de login si el usuario no está autenticado -->
+                <a href="{% url 'login' %}">Iniciar sesión</a>
+            {% endif %}
         </nav>
     </header>
     <main>
