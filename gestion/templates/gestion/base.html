@@ -1,0 +1,22 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Los Archivos de Mi Cole{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+    <header>
+        <h1>Los Archivos de Mi Cole</h1>
+        <nav>
+            <a href="{% url 'archivo_list' %}">Inicio</a>
+            <a href="{% url 'archivo_create' %}">Subir Archivo</a>
+            <a href="{% url 'archivo_list' %}">Ver archivos</a>
+        </nav>
+    </header>
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+</body>
+</html>

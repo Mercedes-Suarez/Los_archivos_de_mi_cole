@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     'gestion',
 ]
 
+AUTH_USER_MODEL = 'gestion.Usuario'
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -52,13 +54,14 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'Los_archivos_de_mi_cole.urls'
 
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / "templates"],
         'APP_DIRS': True,
         'OPTIONS': {
-            'context_processors': [
+           'context_processors': [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
@@ -75,12 +78,15 @@ WSGI_APPLICATION = 'Los_archivos_de_mi_cole.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'colegio_db',
-        'USER': 'root',
-        'PASSWORD': 'tu_contraseña',
-        'HOST': 'localhost',
-        'PORT': '3306',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+#        'USER': 'root',
+#        'PASSWORD': '',
+#        'HOST': '127.0.0.1',
+#        'PORT': '3306',
+#        'OPTIONS': {
+#            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+#        },
     }
 }
 

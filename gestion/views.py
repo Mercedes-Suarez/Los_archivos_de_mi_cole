@@ -3,6 +3,9 @@ from django.views.decorators.http import require_http_methods
 from .models import Archivo
 from .forms import ArchivoForm
 
+def inicio(request):
+    return render(request, 'inicio.html')
+
 def archivo_list(request):
     archivos = Archivo.objects.all()
     return render(request, 'gestion/archivo_list.html', {'archivos': archivos})
