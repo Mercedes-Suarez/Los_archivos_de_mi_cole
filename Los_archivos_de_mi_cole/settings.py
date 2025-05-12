@@ -144,4 +144,9 @@ LOGOUT_REDIRECT_URL = '/'  # Página a la que será redirigido el usuario despu�
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
+# Tamaño máximo de archivos permitidos para subida (20MB)
+DATA_UPLOAD_MAX_MEMORY_SIZE = 20 * 1024 * 1024  # 20 MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 20 * 1024 * 1024  # 20 MB
+
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

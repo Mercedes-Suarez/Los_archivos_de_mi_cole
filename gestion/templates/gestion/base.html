@@ -26,7 +26,27 @@
         </nav>
     </header>
     <main>
+        {% if messages %}
+          <ul class="messages">
+              {% for message in messages %}
+                  <li class="{{ message.tags }}">{{ message }}</li>
+              {% endfor %}
+          </ul>
+        {% endif %}
+
         {% block content %}{% endblock %}
     </main>
+    <script>
+       // Cierra automáticamente los mensajes después de 4 segundos (4000 milisegundos)
+       setTimeout(() => {
+           const messages = document.querySelectorAll('ul.messages li');
+           messages.forEach(msg => {
+              msg.style.transition = 'opacity 0.5s ease';
+              msg.style.opacity = '0';
+             setTimeout(() => msg.remove(), 500);
+             });
+        }, 4000);
+    </script>
+
 </body>
 </html>

@@ -1,0 +1,47 @@
+[
+  {
+    "model": "gestion.asignatura",
+    "pk": 1,
+    "fields": { "nombre": "Lengua" }
+  },
+  {
+    "model": "gestion.asignatura",
+    "pk": 2,
+    "fields": { "nombre": "Matemáticas" }
+  },
+  {
+    "model": "gestion.asignatura",
+    "pk": 3,
+    "fields": { "nombre": "Ciencias Naturales" }
+  },  
+  {
+    "model": "gestion.asignatura",
+    "pk": 4,
+    "fields": { "nombre": "Ciencias Socialess" }
+  },
+  {
+    "model": "gestion.asignatura",
+    "pk": 5,
+    "fields": { "nombre": "Inglés" }
+  },
+  {
+    "model": "gestion.asignatura",
+    "pk": 6,
+    "fields": { "nombre": "Historia" }
+  },
+  {
+    "model": "gestion.asignatura",
+    "pk": 7,
+    "fields": { "nombre": "Geografía" }
+  },
+  {
+    "model": "gestion.asignatura",
+    "pk": 8,
+    "fields": { "nombre": "Plástica" }
+  },
+  {
+    "model": "gestion.asignatura",
+    "pk": 9,
+    "fields": { "nombre": "Educación Física" }
+  }
+]

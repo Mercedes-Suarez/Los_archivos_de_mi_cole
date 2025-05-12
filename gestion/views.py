@@ -1,8 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import user_passes_test
-from django.views.decorators.http import require_http_methods
 from django.contrib.auth.views import LogoutView
-from .models import Archivo
+from django.contrib import messages
+
+
+from .models import Archivo, Asignatura
 from .forms import ArchivoForm
 
 # Solo permite acceso si el usuario es staff (admin)
@@ -31,12 +33,22 @@ def archivo_list(request):
     archivos = Archivo.objects.all()
     return render(request, 'gestion/archivo_list.html', {'archivos': archivos})
 
-@require_http_methods(["GET", "POST"])
+@user_passes_test(lambda u: u.is_staff)
 def archivo_create(request):
-    form = ArchivoForm(request.POST or None, request.FILES or None)
-    if form.is_valid():
-        form.save()
-        return redirect('archivo_list')
+    if request.method == 'POST':
+        form = ArchivoForm(request.POST, request.FILES)
+        if form.is_valid():
+            nueva_asignatura = form.cleaned_data.get('nueva_asignatura')
+            archivo = form.save(commit=False)
+            if nueva_asignatura:
+                asignatura_obj, _ = Asignatura.objects.get_or_create(nombre=nueva_asignatura)
+                archivo.asignatura = asignatura_obj
+            archivo.subido_por = request.user
+            archivo.save()
+            messages.success(request, "Archivo subido con éxito.")
+            return redirect('archivo_list')  # Aquí rediriges al listado u otra vista de inicio admin
+    else:
+        form = ArchivoForm()
     return render(request, 'gestion/archivo_form.html', {'form': form})
 
 def archivo_delete(request, pk):

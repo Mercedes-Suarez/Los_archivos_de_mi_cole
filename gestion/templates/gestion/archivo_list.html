@@ -39,7 +39,15 @@
     </tr>
     {% for archivo in archivos %}
     <tr>
-        <td><a href="{{ archivo.archivo.url }}" target="_blank">{{ archivo.archivo.name|slice:"10:" }}</a></td>
+        <td>
+            {% if archivo.archivo %}
+              <a href="{{ archivo.archivo.url }}" target="_blank">Descargar archivo</a>
+            {% elif archivo.enlace_externo %}
+              <a href="{{ archivo.enlace_externo }}" target="_blank">Abrir enlace externo</a>
+            {% else %}
+                <span>No hay archivo disponible</span>
+            {% endif %}
+        </td>
         <td>{{ archivo.asignatura }}</td>
         <td>{{ archivo.get_trimestre_display }}</td>
         <td>{{ archivo.subido_por }}</td>
