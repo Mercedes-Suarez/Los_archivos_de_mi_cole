@@ -27,6 +27,26 @@
         <option value="4"> * Vacaciones</option>
     </select>
 
+    <label>Curso:</label>
+    <select name="curso">
+    <option value="">Todos</option>
+    <optgroup label="Primaria">
+        <option value="1P">1º Primaria</option>
+        <option value="2P">2º Primaria</option>
+        <option value="3P">3º Primaria</option>
+        <option value="4P">4º Primaria</option>
+        <option value="5P">5º Primaria</option>
+        <option value="6P">6º Primaria</option>
+    </optgroup>
+    <Br>
+    <optgroup label="Secundaria">
+        <option value="1S">1º Secundaria</option>
+        <option value="2S">2º Secundaria</option>
+        <option value="3S">3º Secundaria</option>
+        <option value="4S">4º Secundaria</option>
+    </optgroup>
+</select>
+
     <button type="submit">Filtrar</button>
 </form>
 <table border="1" cellspacing="0" cellpadding="5">
@@ -41,9 +61,9 @@
     <tr>
         <td>
             {% if archivo.archivo %}
-              <a href="{{ archivo.archivo.url }}" target="_blank">Descargar archivo</a>
+                <a href="{{ archivo.archivo.url }}" target="_blank">{{ archivo.archivo.name|cut:"archivos/" }}</a>
             {% elif archivo.enlace_externo %}
-              <a href="{{ archivo.enlace_externo }}" target="_blank">Abrir enlace externo</a>
+                <a href="{{ archivo.enlace_externo }}" target="_blank">Abrir enlace externo</a>
             {% else %}
                 <span>No hay archivo disponible</span>
             {% endif %}

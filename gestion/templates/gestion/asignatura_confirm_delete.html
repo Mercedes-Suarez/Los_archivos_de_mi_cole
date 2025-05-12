@@ -1,0 +1,12 @@
+{% extends 'gestion/base.html' %}
+
+{% block title %}Eliminar Asignatura{% endblock %}
+
+{% block content %}
+<h2>¿Eliminar la asignatura "{{ asignatura.nombre }}"?</h2>
+<form method="post">
+    {% csrf_token %}
+    <button type="submit">Sí, eliminar</button>
+    <a href="{% url 'asignatura_list' %}">Cancelar</a>
+</form>
+{% endblock %}

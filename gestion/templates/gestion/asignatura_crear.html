@@ -1,0 +1,103 @@
+{% extends 'gestion/base.html' %}
+{% load static %}
+
+{% block title %}Crear Asignatura{% endblock %}
+
+{% block content %}
+<style>
+    .form-container {
+        max-width: 400px;
+        margin: 30px auto;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        background-color: #f9f9f9;
+    }
+
+    .form-container h2 {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    input[type="text"] {
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid #aaa;
+        border-radius: 6px;
+    }
+
+    .btn-submit {
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+    .btn-submit:hover {
+        background-color: #45a049;
+    }
+
+    .message {
+        text-align: center;
+        margin-bottom: 15px;
+        padding: 10px;
+        border-radius: 6px;
+    }
+
+    .message-success {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .message-error {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+</style>
+
+<div class="form-container">
+    <h2>Crear Nueva Asignatura</h2>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="message message-{{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+        <script>
+            setTimeout(() => {
+                const msg = document.querySelector('.message');
+                if (msg) {
+                    msg.style.display = 'none';
+                    window.location.href = "{% url 'asignatura_list' %}";
+                }
+            }, 3000);
+        </script>
+    {% endif %}
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="id_nombre">Nombre:</label>
+            <input type="text" name="nombre" id="id_nombre" value="{{ form.nombre.value|default_if_none:'' }}">
+            {% if form.nombre.errors %}
+                <div class="message message-error">{{ form.nombre.errors.0 }}</div>
+            {% endif %}
+        </div>
+
+        <button type="submit" class="btn-submit">Guardar</button>
+        <a href="{% url 'asignatura_list' %}">Cancelar</a>
+    </form>
+</div>
+{% endblock %}

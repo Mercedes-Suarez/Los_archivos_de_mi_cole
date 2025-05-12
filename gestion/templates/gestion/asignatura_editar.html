@@ -1,0 +1,38 @@
+{% extends 'gestion/base.html' %}
+{% load static %}
+
+{% block title %}Editar Asignatura{% endblock %}
+
+{% block content %}
+<h2>Editar Asignatura</h2>
+
+{% if messages %}
+    {% for message in messages %}
+        <div id="mensaje" class="mensaje-{{ message.tags }}">
+            {{ message }}
+        </div>
+    {% endfor %}
+    <script>
+        // Oculta el mensaje tras 3 segundos
+        setTimeout(() => {
+            const mensaje = document.getElementById("mensaje");
+            if (mensaje) {
+                mensaje.style.display = "none";
+                window.location.href = "{% url 'asignatura_list' %}";  // Redirige a la lista de asignaturas
+            }
+        }, 3000);
+    </script>
+{% endif %}
+
+<form method="post">
+    {% csrf_token %}
+    <label for="id_nombre">Nombre de la Asignatura:</label><br>
+    <input type="text" name="nombre" id="id_nombre" value="{{ form.nombre.value|default:asignatura.nombre }}"><br>
+    {% if form.nombre.errors %}
+        <div style="color: red;">{{ form.nombre.errors }}</div>
+    {% endif %}
+    
+    <button type="submit">Guardar cambios</button>
+    <a href="{% url 'asignatura_list' %}">Cancelar</a>
+</form>
+{% endblock %}

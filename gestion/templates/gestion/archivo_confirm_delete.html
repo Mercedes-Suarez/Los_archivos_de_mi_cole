@@ -3,10 +3,16 @@
 {% block title %}Eliminar Archivo{% endblock %}
 
 {% block content %}
-<h2>¿Estás seguro de que quieres eliminar "{{ archivo.archivo.name|cut:'archivos/' }}"?</h2>
+<h2>Confirmar eliminación</h2>
+    
+<p>¿Estás seguro de que quieres eliminar el archivo </strong>{{ object }}</strong></p>
+
 <form method="post">
     {% csrf_token %}
-    <button type="submit">Sí, eliminar</button>
-    <a href="{% url 'archivo_list' %}">Cancelar</a>
+    <button type="submit" onclick="return confirm('¿Estás seguro de eliminar este archivo?')">Eliminar</button>
+
 </form>
+
+<a href="{% url 'archivo_list' %}">Cancelar</a>
+
 {% endblock %}

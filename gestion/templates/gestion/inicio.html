@@ -1,0 +1,33 @@
+{% extends 'gestion/base.html' %}
+
+{% block title %}Inicio{% endblock %}
+
+{% block content %}
+<h2>Bienvenido a Los Archivos de Mi Cole</h2>
+<p>Esta plataforma permite a estudiantes y administradores gestionar los archivos escolares.</p>
+
+{% if user.is_authenticated %}
+    <p>Hola, {{ user.username }}. Puedes ver los <a href="{% url 'archivo_list' %}">archivos</a>.</p>
+{% else %}
+    <p><a href="{% url 'login' %}">Inicia sesión</a> para acceder a los archivos.</p>
+{% endif %}
+
+<img src="{% static 'img/escuela.jpg' %}" alt="Imagen del colegio" style="width: 100%; max-width: 600px; margin-top: 20px;">
+
+<div class="carousel">
+  <div class="slide">📚 “El conocimiento es poder”</div>
+  <div class="slide">💡 “Aprender es crecer”</div>
+  <div class="slide">🌟 “Tú puedes con todo”</div>
+  <div class="slide">🧠 “Sigue tu curiosidad”</div>
+  <div class="slide">🎓 “Cada día cuenta”</div>
+</div>
+
+<div class="carousel-images">
+  <img class="slide-img" src="{% static 'img/img1.jpg' %}" alt="Imagen 1">
+  <img class="slide-img" src="{% static 'img/img2.jpg' %}" alt="Imagen 2">
+  <img class="slide-img" src="{% static 'img/img3.jpg' %}" alt="Imagen 3">
+  <img class="slide-img" src="{% static 'img/img4.jpg' %}" alt="Imagen 4">
+  <img class="slide-img" src="{% static 'img/img5.jpg' %}" alt="Imagen 5">
+</div>
+
+{% endblock %}

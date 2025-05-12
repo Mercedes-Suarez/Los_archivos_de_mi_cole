@@ -5,25 +5,27 @@
     <meta charset="UTF-8">
     <title>{% block title %}Los Archivos de Mi Cole{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
     <header>
         <h1>Los Archivos de Mi Cole</h1>
         <nav>
-            <a href="{% url 'archivo_list' %}">Inicio</a>
-            {% if user.is_staff %}
-             <a href="{% url 'archivo_create' %}">Subir archivo</a>
-            {% endif %}
-            <a href="{% url 'archivo_list' %}">Ver archivos</a>
-            
+          <ul>
+            <li><a href="{% url 'inicio' %}">Inicio</a></li>
+            <li><a href="{% url 'archivo_list' %}">Ver archivos</a></li>
             {% if user.is_authenticated %}
-                <!-- Mostrar el enlace de logout si el usuario está autenticado -->
-                <a href="{% url 'logout' %}">Cerrar sesión</a>
+                {% if user.is_staff %}
+                    <li><a href="{% url 'asignatura_list' %}">Asignaturas</a></li>
+                    <li><a href="{% url 'archivo_create' %}">Subir archivo</a></li>
+                {% endif %}
+                <li><a href="{% url 'logout' %}">Cerrar sesión</a></li>
             {% else %}
-                <!-- Mostrar el enlace de login si el usuario no está autenticado -->
-                <a href="{% url 'login' %}">Iniciar sesión</a>
+                <li><a href="{% url 'login' %}">Iniciar sesión</a></li>
             {% endif %}
+           </ul>
         </nav>
+        <hr>
     </header>
     <main>
         {% if messages %}
@@ -36,6 +38,13 @@
 
         {% block content %}{% endblock %}
     </main>
+
+    
+    <footer>
+        <hr>
+        <p style="text-align:center;">&copy; {{ now|date:"Y" }} Mi Cole</p>
+    </footer>
+
     <script>
        // Cierra automáticamente los mensajes después de 4 segundos (4000 milisegundos)
        setTimeout(() => {

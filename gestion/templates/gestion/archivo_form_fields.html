@@ -1,0 +1,79 @@
+{% extends 'gestion/base.html' %}
+
+{% block title %}Subir Archivo{% endblock %}
+
+{% block content %}
+<h2>Subir Archivo</h2>
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+     {{ form.non_field_errors }}
+
+    <p>
+        {{ form.archivo.label_tag }} 
+        <label for="id_archivo">Archivo (máx. 10MB):</label>
+        {{ form.archivo }}<br>
+        <span style="color:red">{{ form.archivo.errors }}</span>
+    </p>
+    <p>
+        {{ form.enlace_externo.label_tag }} {{ form.enlace_externo }} <br>
+        <span style="color:red">{{ form.enlace_externo.errors }}</span>
+    </p>
+    <p>
+        {{ form.asignatura.label_tag }} {{ form.asignatura }}<br>
+        <span style="color:red">{{ form.asignatura.errors }}</span>
+    </p>
+    <p id="nueva_asignatura_field">{{ form.nueva_asignatura.label_tag }} {{ form.nueva_asignatura }} <br>
+        <span style="color:red">{{ form.nueva_asignatura.errors }}</span>
+    </p>
+    <p>
+        {{ form.trimestre.label_tag }} {{ form.trimestre }} <br>
+        <span style="color:red">{{ form.trimestre.errors }}</span>
+    </p>
+    <p style="color: gray; font-size: 0.9em;">
+        Tamaño máximo permitido para archivos: <strong>20 MB</strong>. 
+        Si el archivo es más grande, sube el documento a Google Drive u otro servicio y pega aquí el <strong>enlace externo</strong>.
+    </p>
+    <button type="submit">Guardar</button>
+</form>
+
+<script>
+    const archivoInput = document.getElementById('id_archivo');
+    if (archivoInput) {
+        archivoInput.setAttribute('accept', '.pdf,.doc,.docx,.jpg,.png,.ppt,.pptx,.pps,.ppsx');
+    }
+    const select = document.getElementById('id_asignatura');
+    const nuevaInput = document.getElementById('id_nueva_asignatura');
+
+    const opt = document.createElement("option");
+    opt.value = "__nueva__";
+    opt.text = "+ Añadir nueva asignatura";
+    select.appendChild(opt);
+
+    nuevaInput.parentElement.style.display = 'none';
+
+    select.addEventListener('change', function () {
+        if (this.value === '__nueva__') {
+            nuevaInput.parentElement.style.display = 'block';
+        } else {
+            nuevaInput.parentElement.style.display = 'none';
+            nuevaInput.value = '';
+        }
+    });
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('success') === '1') {
+        alert("✅ Archivo subido con éxito");
+        // Borra el parámetro para que no vuelva a salir si refresca
+        window.history.replaceState({}, document.title, window.location.pathname);
+    }
+    document.querySelector('form').addEventListener('submit', function(event) {
+        const archivo = document.querySelector('input[type="file"]').files[0];
+        const enlace = document.querySelector('input[name="enlace_externo"]').value.trim();
+
+        if (!archivo && !enlace) {
+            alert("Debes subir un archivo o proporcionar un enlace externo.");
+            event.preventDefault();
+        }
+    });
+</script>
+  {% endblock %}
+

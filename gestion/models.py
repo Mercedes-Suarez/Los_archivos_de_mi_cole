@@ -15,14 +15,20 @@ class Asignatura(models.Model):
 
 class Archivo(models.Model):
     TRIMESTRES = [(1, '1º Trimestre'), (2, '2º Trimestre'), (3, '3º Trimestre'), (4, 'Vacaciones'),]
+
+    CURSOS = [
+        ('1P', '1º Primaria'), ('2P', '2º Primaria'), ('3P', '3º Primaria'),
+        ('4P', '4º Primaria'), ('5P', '5º Primaria'), ('6P', '6º Primaria'),
+        ('1S', '1º Secundaria'), ('2S', '2º Secundaria'),
+        ('3S', '3º Secundaria'), ('4S', '4º Secundaria'),
+    ]
     
     archivo = models.FileField(upload_to='archivos/', blank=True, null=True)
     
     enlace_externo = models.URLField(blank=True, null=True)
-    
-    
     asignatura = models.ForeignKey(Asignatura, on_delete=models.CASCADE)
     trimestre = models.IntegerField(choices=TRIMESTRES)
+    curso = models.CharField(max_length=2, choices=CURSOS)
     fecha_subida = models.DateTimeField(auto_now_add=True)
     subido_por = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
 
