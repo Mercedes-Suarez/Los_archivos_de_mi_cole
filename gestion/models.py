@@ -2,9 +2,26 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
 
-# Create your models here.
+CURSOS = [
+        ('1P', '1º Primaria'), ('2P', '2º Primaria'), ('3P', '3º Primaria'),
+        ('4P', '4º Primaria'), ('5P', '5º Primaria'), ('6P', '6º Primaria'),
+        ('1S', '1º Secundaria'), ('2S', '2º Secundaria'),
+        ('3S', '3º Secundaria'), ('4S', '4º Secundaria'),
+]
+
+TRIMESTRES = [
+    (1, '1º Trimestre'), (2, '2º Trimestre'),
+    (3, '3º Trimestre'), (4, 'Vacaciones'),]
+
 class Usuario(AbstractUser):
     pass
+
+class Alumno(models.Model):
+    nombre = models.CharField(max_length=100)
+    curso = models.CharField(max_length=2, choices=CURSOS)
+
+    def __str__(self):
+        return f"{self.nombre} ({self.get_curso_display()})"
 
 class Asignatura(models.Model):
 
@@ -13,18 +30,8 @@ class Asignatura(models.Model):
     def __str__(self):
         return f"{self.nombre}"
 
-class Archivo(models.Model):
-    TRIMESTRES = [(1, '1º Trimestre'), (2, '2º Trimestre'), (3, '3º Trimestre'), (4, 'Vacaciones'),]
-
-    CURSOS = [
-        ('1P', '1º Primaria'), ('2P', '2º Primaria'), ('3P', '3º Primaria'),
-        ('4P', '4º Primaria'), ('5P', '5º Primaria'), ('6P', '6º Primaria'),
-        ('1S', '1º Secundaria'), ('2S', '2º Secundaria'),
-        ('3S', '3º Secundaria'), ('4S', '4º Secundaria'),
-    ]
-    
+class Archivo(models.Model):    
     archivo = models.FileField(upload_to='archivos/', blank=True, null=True)
-    
     enlace_externo = models.URLField(blank=True, null=True)
     asignatura = models.ForeignKey(Asignatura, on_delete=models.CASCADE)
     trimestre = models.IntegerField(choices=TRIMESTRES)

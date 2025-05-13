@@ -1,0 +1,26 @@
+<h2>Acceso para alumnos</h2>
+
+<form method="post">
+    {% csrf_token %}
+    <label for="nombre">Nombre:</label>
+    <input type="text" name="nombre" id="nombre">
+    <button type="submit">Ver archivos</button>
+</form>
+
+{% if alumno %}
+    <h3>Archivos para {{ alumno.get_curso_display }}</h3>
+    <ul>
+        {% for archivo in archivos %}
+            <li>
+                {{ archivo.nombre_archivo }} - {{ archivo.asignatura }}
+                {% if archivo.archivo %}
+                    <a href="{{ archivo.archivo.url }}">Descargar</a>
+                {% elif archivo.enlace_externo %}
+                    <a href="{{ archivo.enlace_externo }}" target="_blank">Enlace</a>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+{% elif archivos is not None %}
+    <p>No se encontró el alumno. Verifica el nombre.</p>
+{% endif %}

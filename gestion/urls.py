@@ -2,12 +2,14 @@ from django.urls import path
 from django.contrib.auth.views import LoginView
 
 from . import views
-from .views import logout_with_message, archivo_delete
+from .views import archivo_delete
 
 urlpatterns = [
 
-    path('', views.inicio, name='inicio'),
+    path('', views.inicio, name='home'),
+    path('inicio', views.inicio, name='inicio'),
     path('registro/', views.registro_usuario, name='registro'),
+    path('alumno/', views.acceso_alumno, name='acceso_alumno'),
 
     # Gestión de archivos
 

@@ -7,8 +7,21 @@
 
 <form method="post">
     {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Iniciar sesión</button>
+    
+
+     <p>
+       <label for="{{ form.username.id_for_label }}">Usuario:</label>
+       <input type="text" name="username" id="{{ form.username.id_for_label }}" required 
+           autocomplete="off" maxlength="150" autocapitalize="none">
+       </p>
+
+     <p>
+        <label for="{{ form.password.id_for_label }}">Contraseña:</label>
+        <input type="password" name="password" id="{{ form.password.id_for_label }}" required 
+           autocomplete="off">
+     </p>
+
+     <button type="submit">Iniciar sesión</button>
 </form>
 
 <p>¿No tienes cuenta? <a href="{% url 'registro' %}">Regístrate</a></p>
