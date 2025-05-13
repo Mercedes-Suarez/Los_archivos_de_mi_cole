@@ -1,11 +1,23 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import user_passes_test
-from django.contrib.auth import logout
+from django.contrib.auth import logout, get_user_model
 from django.contrib import messages
 
 
 from .models import Archivo, Asignatura
-from .forms import ArchivoForm, AsignaturaForm
+from .forms import ArchivoForm, AsignaturaForm, RegistroForm
+
+#Usuario = get_user_model()
+
+def registro_usuario(request):
+    if request.method == 'POST':
+        form = RegistroForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('login')
+    else:
+        form = RegistroForm()
+    return render(request, 'gestion/registro.html', {'form': form})
 
 # Solo permite acceso si el usuario es staff (admin)
 def es_admin(user):
@@ -17,28 +29,46 @@ def logout_with_message(request):
     return redirect('/')
 
 def inicio(request):
-    return render(request, 'inicio.html')
+    return render(request, 'gestion/inicio.html')
 
 def archivo_list(request):
-    asignaturas = Asignatura.objects.all()
+    curso_actual = request.GET.get('curso', '')
+    trimestre_actual = request.GET.get('trimestre', '')
+    asignatura_actual = request.GET.get('asignatura', '')
+
     archivos = Archivo.objects.all()
-    cursos = Archivo.objects.all()
 
-    asignatura_id = request.GET.get('asignatura')
-    trimestre = request.GET.get('trimestre')
-    curso = request.GET.get('curso')
+    cursos_primaria = [
+         ('1P', '1º Primaria'), ('2P', '2º Primaria'), ('3P', '3º Primaria'),
+         ('4P', '4º Primaria'), ('5P', '5º Primaria'), ('6P', '6º Primaria')
+        ]
 
-    if asignatura_id:
-        archivos = archivos.filter(asignatura_id=asignatura_id)
-    if trimestre:
-        archivos = archivos.filter(trimestre=trimestre)
-    if curso:
-        archivos = archivos.filter(curso=curso)
+    cursos_secundaria = [
+         ('1S', '1º Secundaria'), ('2S', '2º Secundaria'),
+         ('3S', '3º Secundaria'), ('4S', '4º Secundaria')
+        ]
+
+    context = {
+         "archivos": archivos,
+         "asignaturas": Asignatura.objects.all(),
+         "curso_actual": curso_actual,
+         "trimestre_actual": trimestre_actual,
+         "asignatura_actual": asignatura_actual,
+}
+
+    if asignatura_actual:
+        archivos = archivos.filter(asignatura_id=asignatura_actual)
+    if trimestre_actual:
+        archivos = archivos.filter(trimestre=trimestre_actual)
+    if curso_actual:
+        archivos = archivos.filter(curso=curso_actual)
 
     return render(request, 'gestion/archivo_list.html', {
         'archivos': archivos,
-        'asignaturas': asignaturas,
-        'curso': cursos,
+        'asignaturas': Asignatura.objects.all(),
+        'asignatura_actual': asignatura_actual,
+        'trimestre_actual': trimestre_actual,
+        'curso_actual': curso_actual
     })
     
 @user_passes_test(lambda u: u.is_staff)

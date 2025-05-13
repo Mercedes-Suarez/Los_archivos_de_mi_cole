@@ -1,5 +1,7 @@
 {% extends 'gestion/base.html' %}
 
+{% load static %}
+
 {% block title %}Inicio{% endblock %}
 
 {% block content %}
@@ -12,7 +14,7 @@
     <p><a href="{% url 'login' %}">Inicia sesión</a> para acceder a los archivos.</p>
 {% endif %}
 
-<img src="{% static 'img/escuela.jpg' %}" alt="Imagen del colegio" style="width: 100%; max-width: 600px; margin-top: 20px;">
+
 
 <div class="carousel">
   <div class="slide">📚 “El conocimiento es poder”</div>
@@ -29,5 +31,37 @@
   <img class="slide-img" src="{% static 'img/img4.jpg' %}" alt="Imagen 4">
   <img class="slide-img" src="{% static 'img/img5.jpg' %}" alt="Imagen 5">
 </div>
+
+<script>
+  // Carrusel de frases
+  const frases = document.querySelectorAll('.carousel .slide');
+  let indexFrase = 0;
+
+  function mostrarSiguienteFrase() {
+    frases.forEach(f => f.classList.remove('active'));
+    frases[indexFrase].classList.add('active');
+    indexFrase = (indexFrase + 1) % frases.length;
+  }
+
+  if (frases.length > 0) {
+    frases[0].classList.add('active');
+    setInterval(mostrarSiguienteFrase, 3000); // cada 3 segundos
+  }
+
+  // Carrusel de imágenes
+  const imagenes = document.querySelectorAll('.carousel-images .slide-img');
+  let indexImagen = 0;
+
+  function mostrarSiguienteImagen() {
+    imagenes.forEach(img => img.classList.remove('active'));
+    imagenes[indexImagen].classList.add('active');
+    indexImagen = (indexImagen + 1) % imagenes.length;
+  }
+
+  if (imagenes.length > 0) {
+    imagenes[0].classList.add('active');
+    setInterval(mostrarSiguienteImagen, 4000); // cada 4 segundos
+  }
+</script>
 
 {% endblock %}

@@ -1,6 +1,12 @@
 # gestion/forms.py
 from django import forms
-from .models import Archivo, Asignatura
+from django.contrib.auth.forms import UserCreationForm
+from .models import Archivo, Asignatura, Usuario
+
+class RegistroForm(UserCreationForm):
+    class Meta:
+        model = Usuario
+        fields = ['username', 'email', 'password1', 'password2']
 
 class ArchivoForm(forms.ModelForm):
     nueva_asignatura = forms.CharField(required=False, label='Nueva Asignatura')

@@ -14,38 +14,37 @@
     <select name="asignatura">
         <option value="">Todas</option>
         {% for asignatura in asignaturas %}
-            <option value="{{ asignatura.id }}">{{ asignatura.nombre }}</option>
+            <option value="{{ asignatura.id }}" {% if asignatura.id|stringformat:"s" == asignatura_actual %}selected{% endif %}>
+                {{ asignatura.nombre }}
+            </option>
         {% endfor %}
     </select>
 
     <label>Trimestre:</label>
     <select name="trimestre">
         <option value="">Todos</option>
-        <option value="1">1º Trimestre</option>
-        <option value="2">2º Trimestre</option>
-        <option value="3">3º Trimestre</option>
-        <option value="4"> * Vacaciones</option>
+        <option value="1" {% if trimestre_actual == '1' %}selected{% endif %}>1º Trimestre</option>
+        <option value="2" {% if trimestre_actual == '2' %}selected{% endif %}>2º Trimestre</option>
+        <option value="3" {% if trimestre_actual == '3' %}selected{% endif %}>3º Trimestre</option>
+        <option value="4" {% if trimestre_actual == '4' %}selected{% endif %}>* Vacaciones</option>
     </select>
 
     <label>Curso:</label>
     <select name="curso">
-    <option value="">Todos</option>
-    <optgroup label="Primaria">
-        <option value="1P">1º Primaria</option>
-        <option value="2P">2º Primaria</option>
-        <option value="3P">3º Primaria</option>
-        <option value="4P">4º Primaria</option>
-        <option value="5P">5º Primaria</option>
-        <option value="6P">6º Primaria</option>
-    </optgroup>
-    <Br>
-    <optgroup label="Secundaria">
-        <option value="1S">1º Secundaria</option>
-        <option value="2S">2º Secundaria</option>
-        <option value="3S">3º Secundaria</option>
-        <option value="4S">4º Secundaria</option>
-    </optgroup>
-</select>
+        <option value="">Todos</option>
+            <optgroup label="Primaria">
+                {% for opcion, texto in cursos_primaria %}
+                  <option value="{{ opcion }}" {% if opcion == curso_actual %}selected{% endif %}>{{ texto }}</option>
+                {% endfor %}
+            </optgroup>
+
+            <optgroup label="Secundaria">
+                {% for opcion, texto in cursos_secundaria %}
+                  <option value="{{ opcion }}" {% if opcion == curso_actual %}selected{% endif %}>{{ texto }}</option>
+                {% endfor %}
+            </optgroup>   
+        
+    </select>
 
     <button type="submit">Filtrar</button>
 </form>
@@ -54,6 +53,7 @@
         <th>Nombre de archivo</th>
         <th>Asignaturas</th>
         <th>Trimestre</th>
+        <th>Curso</th>
         <th>Subido por</th>
         <th>Acciones</th>
     </tr>
@@ -70,7 +70,9 @@
         </td>
         <td>{{ archivo.asignatura }}</td>
         <td>{{ archivo.get_trimestre_display }}</td>
+        <td>{{ archivo.get_curso_display }}</td> 
         <td>{{ archivo.subido_por }}</td>
+
         <td>
             <form method="post" action="{% url 'archivo_delete' archivo.pk %}">
                 {% csrf_token %}
