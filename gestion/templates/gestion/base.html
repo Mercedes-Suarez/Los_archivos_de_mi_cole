@@ -18,6 +18,7 @@
                 {% if user.is_staff %}
                     <li><a href="{% url 'asignatura_list' %}">Asignaturas</a></li>
                     <li><a href="{% url 'archivo_create' %}">Subir archivo</a></li>
+                    <li><a href="{% url 'alumno_list' %}">👨‍🎓 Mis Alumnos</a></li>
                 {% endif %}
                 <li>
                     <form method="post" action="{% url 'logout' %}" style="display:inline;">

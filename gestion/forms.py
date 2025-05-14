@@ -1,7 +1,16 @@
 # gestion/forms.py
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import Archivo, Asignatura, Usuario
+from .models import Archivo, Asignatura, Usuario, Alumno
+
+class AlumnoForm(forms.ModelForm):
+    class Meta:
+        model = Alumno
+        fields = ['nombre', 'curso']
+        labels = {
+            'nombre': 'Nombre del alumno',
+            'curso': 'CuCurso',
+        }
 
 class RegistroForm(UserCreationForm):
     class Meta:

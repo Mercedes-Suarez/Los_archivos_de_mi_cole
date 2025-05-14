@@ -25,6 +25,12 @@ urlpatterns = [
     path('asignaturas/<int:pk>/editar/', views.asignatura_edit, name='asignatura_edit'),
     path('asignaturas/<int:pk>/eliminar/', views.asignatura_delete, name='asignatura_delete'),
 
+    # Gestion de alumnos
+
+    path('alumnos/', views.alumno_list, name='alumno_list'),
+    path('alumnos/nuevo/', views.alumno_create, name='alumno_create'),
+    path('alumnos/<int:pk>/editar/', views.alumno_edit, name='alumno_edit'),
+    path('alumnos/<int:pk>/eliminar/', views.alumno_delete, name='alumno_delete'),
 
 ]
 

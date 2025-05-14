@@ -1,0 +1,26 @@
+{% extends 'gestion/base.html' %}
+{% block content %}
+<h2>Mis Alumnos</h2>
+<a href="{% url 'alumno_create' %}">➕ Crear nuevo alumno</a>
+<table>
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Curso</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for alumno in alumnos %}
+        <tr>
+            <td>{{ alumno.nombre }}</td>
+            <td>{{ alumno.get_curso_display }}</td>
+            <td>
+                <a href="{% url 'alumno_edit' alumno.pk %}">✏️ Editar</a> |
+                <a href="{% url 'alumno_delete' alumno.pk %}">🗑️ Eliminar</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

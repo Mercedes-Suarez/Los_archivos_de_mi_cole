@@ -4,8 +4,8 @@ from django.contrib.auth import logout, get_user_model
 from django.contrib import messages
 
 
-from .models import Archivo,Alumno, Asignatura
-from .forms import ArchivoForm, AsignaturaForm, RegistroForm
+from .models import Archivo,Alumno, Asignatura, CURSOS, TRIMESTRES
+from .forms import ArchivoForm, AsignaturaForm, RegistroForm, AlumnoForm
 
 Usuario = get_user_model()
 
@@ -48,28 +48,52 @@ def acceso_alumno(request):
         'alumno': alumno
     })
 
+CURSOS_PRIMARIA = [
+       ('1P', '1º Primaria'),
+       ('2P', '2º Primaria'),
+       ('3P', '3º Primaria'),
+       ('4P', '4º Primaria'),
+       ('5P', '5º Primaria'),
+       ('6P', '6º Primaria'),
+    ]
+CURSOS_SECUNDARIA = [
+       ('1S', '1º Secundaria'),
+       ('2S', '2º Secundaria'),
+       ('3S', '3º Secundaria'),
+       ('4S', '4º Secundaria'),
+    ]
+TRIMESTRES = [
+    (1, '1º Trimestre'), (2, '2º Trimestre'),
+    (3, '3º Trimestre'), (4, 'Vacaciones'),
+]
+
 def archivo_list(request):
-    curso_actual = request.GET.get('curso', '')
-    trimestre_actual = request.GET.get('trimestre', '')
-    asignatura_actual = request.GET.get('asignatura', '')
 
     archivos = Archivo.objects.all()
+    asignaturas = Asignatura.objects.all()
 
+    asignatura_actual = request.GET.get('asignatura', '')
+    trimestre_actual = request.GET.get('trimestre', '')
+    curso_actual = request.GET.get('curso', '')
+    
     if asignatura_actual:
         archivos = archivos.filter(asignatura_id=asignatura_actual)
     if trimestre_actual:
         archivos = archivos.filter(trimestre=trimestre_actual)
     if curso_actual:
         archivos = archivos.filter(curso=curso_actual)
-
-    context = {
-         "archivos": archivos,
-         "asignaturas": Asignatura.objects.all(),
-         "curso_actual": curso_actual,
-         "trimestre_actual": trimestre_actual,
-         "asignatura_actual": asignatura_actual,
-    }
     
+    context = {
+
+        'archivos': archivos,
+        'asignaturas': asignaturas,
+        'asignatura_actual': asignatura_actual,
+        'trimestre_actual': trimestre_actual,
+        'curso_actual': curso_actual,
+        'cursos_primaria': CURSOS_PRIMARIA,
+        'cursos_secundaria': CURSOS_SECUNDARIA
+           
+    }
     return render(request, 'gestion/archivo_list.html', context)
     
 @user_passes_test(lambda u: u.is_staff)
@@ -160,3 +184,43 @@ def asignatura_delete(request, pk):
         asignatura.delete()
         return redirect('asignatura_list')
     return render(request, 'gestion/asignatura_confirm_delete.html', {'asignatura': asignatura})
+
+# Vistas para CRUD de Alumnos
+@user_passes_test(lambda u: u.is_staff)
+def alumno_list(request):
+    alumnos = Alumno.objects.all()
+    return render(request, 'gestion/alumno_list.html', {'alumnos': alumnos})
+
+@user_passes_test(lambda u: u.is_staff)
+def alumno_create(request):
+    if request.method == 'POST':
+        form = AlumnoForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Alumno creado correctamente.")
+            return redirect('alumno_list')
+    else:
+        form = AlumnoForm()
+    return render(request, 'gestion/alumno_form.html', {'form': form})
+
+@user_passes_test(lambda u: u.is_staff)
+def alumno_edit(request, pk):
+    alumno = get_object_or_404(Alumno, pk=pk)
+    if request.method == 'POST':
+        form = AlumnoForm(request.POST, instance=alumno)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Alumno actualizado correctamente.")
+            return redirect('alumno_list')
+    else:
+        form = AlumnoForm(instance=alumno)
+    return render(request, 'gestion/alumno_form.html', {'form': form})
+
+@user_passes_test(lambda u: u.is_staff)
+def alumno_delete(request, pk):
+    alumno = get_object_or_404(Alumno, pk=pk)
+    if request.method == 'POST':
+        alumno.delete()
+        messages.success(request, "Alumno eliminado correctamente.")
+        return redirect('alumno_list')
+    return render(request, 'gestion/alumno_confirm_delete.html', {'alumno': alumno})
