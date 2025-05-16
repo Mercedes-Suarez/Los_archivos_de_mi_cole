@@ -11,6 +11,7 @@
 <p>Sesión iniciada como: {{ user.username }}</p>
 <a href="{% url 'logout' %}">🔓 Cerrar sesión</a>
 <form method="get">
+    <div>
     <label>Asignatura:</label>
     <select name="asignatura">
         <option value="">Todas</option>
@@ -48,58 +49,34 @@
     </select>
 
     <button type="submit">Filtrar</button>
+</div>
 </form>
 <table border="1" cellspacing="0" cellpadding="5">
+</thead>
     <tr>
         <th>Nombre de archivo</th>
-        <th>Asignaturas</th>
-        <th>Trimestre</th>
+        <th>Asignaturas</th>        
         <th>Curso</th>
-        <th>Subido por</th>
-        {% if user.is_staff %}
-          <th>Acciones</th>
-        {% else %}
-         <th>Ejecutar</th>
-        {% endif %}
+        <th>Trimestre</th>
+        <th>Acciones</th>
     </tr>
+</thead>
+</tbody>
     {% for archivo in archivos %}
-    <tr>
+      <tr>
         <td>
-            {% if archivo.archivo %}
-                <a href="{{ archivo.archivo.url }}" target="_blank">{{ archivo.archivo.name|cut:"archivos/" }}</a>
-            {% elif archivo.enlace_externo %}
-                <a href="{{ archivo.enlace_externo }}" target="_blank">🔗 Abrir enlace externo</a>
-            {% else %}
-                <span>⚠️  No hay ningun archivo disponible</span>
-            {% endif %}
+          <a href="{% url 'archivo_ver' archivo.id %}">{{ archivo.nombre_archivo }}</a>
         </td>
         <td>{{ archivo.asignatura }}</td>
-        <td>{{ archivo.get_trimestre_display }}</td>
-        <td>{{ archivo.get_curso_display }}</td> 
-        <td>{{ archivo.subido_por }}</td>
-
-        {% if user.is_staff %}
-
-          <td>
-            <form method="post" action="{% url 'archivo_delete' archivo.pk %}">
-                {% csrf_token %}
-                <button class="btn btn-eliminar" type="submit">🗑️ Eliminar</button>
-                <a class="btn btn-cancelar" href="{% url 'archivo_list' %}">❌ Cancelar</a>
-            </form>
-         </td>
-        {% else %}
-             <td>
-                  {% if archivo.archivo %}
-                      <a href="{% url 'archivo_ver' archivo.pk %}">👁️ Ver</a>
-                  {% elif archivo.enlace_externo %}
-                      <a href="{{ archivo.enlace_externo }}" target="_blank">📂 Abrir</a>
-                  {% else %}
-                  <span>⚠️ No disponible</span>
-                  {% endif %}
-               </td>
-        {% endif %}
-    </tr>
+        <td>{{ archivo.get_curso_display }}</td>
+        <td>{{ archivo.fecha_subida|date:"d/m/Y H:i" }}</td>
+        <td>
+          <a href="{% url 'archivo_editar' archivo.id %}">Editar</a>
+          <a href="{% url 'archivo_delete' archivo.id %}">Eliminar</a>
+        </td>
+      </tr>
     {% endfor %}
+    </tbody>
 </table>
 {% endblock %}
 </div>

@@ -39,7 +39,7 @@
         Si el archivo es más grande, sube el documento a Google Drive u otro servicio y pega aquí el <strong>🔗 enlace externo</strong>.
     </p>
     <button class="btn btn-guardar" type="submit">💾 Guardar</button>
-    <a class="btn btn-cancelar" href="{% url 'archivo_list' %}">❌ Cancelar</a>
+    <a class="btn btn-cancelar" href="{% url 'archivo_list' %}">⬅️ Volver</a>
 </form>
 
 <script>
@@ -65,10 +65,19 @@
             nuevaInput.value = '';
         }
     });
+
+    
     const params = new URLSearchParams(window.location.search);
-    if (params.get('success') === '1') {
+    const success = params.get('success');
+
+    if (success === 'create') {
         alert("✅ Archivo subido con éxito");
-        // Borra el parámetro para que no vuelva a salir si refresca
+    } else if (success === 'edit') {
+        alert("✅ Archivo editado con éxito");
+    }
+
+    // Borra el parámetro para que no vuelva a salir si refresca
+    if (success) {
         window.history.replaceState({}, document.title, window.location.pathname);
     }
     document.querySelector('form').addEventListener('submit', function(event) {

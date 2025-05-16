@@ -1,9 +1,13 @@
+import urllib.parse
+from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import user_passes_test, login_required
 from django.contrib.auth import logout, get_user_model
 from django.contrib.auth.models import Group
 from django.contrib.auth.hashers import make_password
 from django.contrib import messages
+
 
 
 from .models import Archivo,Alumno, Asignatura, CURSOS, TRIMESTRES
@@ -103,11 +107,33 @@ def archivo_list(request):
 def archivo_ver(request, pk):
     archivo = get_object_or_404(Archivo, pk=pk)
 
-     # Validar que el enlace externo sea seguro (solo dominios permitidos)
-    if archivo.enlace_externo and not re.match(r'^https?:\/\/(drive\.google\.com|youtube\.com|youtu\.be|dropbox\.com|onedrive\.live\.com|yourdomain\.com)', archivo.enlace_externo):
-        archivo.enlace_externo = None  # O marca como no confiable
+    enlace_modificado = None
 
-    return render(request, 'gestion/archivo_ver.html', {'archivo': archivo})
+    if archivo.enlace_externo:
+        if "drive.google.com" in archivo.enlace_externo:
+            # Usamos el enlace sin modificar para mostrar en otra pestaña
+            enlace_modificado = archivo.enlace_externo.replace("view?usp=sharing", "preview")
+        elif archivo.enlace_externo.endswith(('.doc', '.docx', '.ppt', '.pptx')):
+            # Usamos visor de Microsoft
+            enlace_modificado = (
+                "https://view.officeapps.live.com/op/view.aspx?src=" +
+                urllib.parse.quote(archivo.enlace_externo, safe='')
+            )
+        else:
+            enlace_modificado = archivo.enlace_externo
+
+    elif archivo.archivo:
+        full_url = request.build_absolute_uri(archivo.archivo.url)
+        if archivo.extension in ['doc', 'docx', 'ppt', 'pptx']:
+            enlace_modificado = (
+                "https://view.officeapps.live.com/op/view.aspx?src=" +
+                urllib.parse.quote(full_url, safe='')
+            )
+
+    return render(request, 'gestion/archivo_ver.html', {
+        'archivo': archivo,
+        'enlace_modificado': enlace_modificado,
+    })
 
 @user_passes_test(lambda u: u.is_staff)
 def archivo_create(request):
@@ -122,22 +148,22 @@ def archivo_create(request):
             archivo.subido_por = request.user
             archivo.save()
             messages.success(request, "Archivo subido con éxito.")
-            return redirect('archivo_list')  # Aquí rediriges al listado u otra vista de inicio admin
+            return redirect(f"{reverse('archivo_create')}?success=create")
     else:
         form = ArchivoForm()
     return render(request, 'gestion/archivo_form.html', {'form': form})
 
 @user_passes_test(es_admin)
-def editar_archivo(request, pk):
+def archivo_editar(request, pk):
     archivo = get_object_or_404(Archivo, pk=pk)
     if request.method == 'POST':
         form = ArchivoForm(request.POST, request.FILES, instance=archivo)
         if form.is_valid():
             form.save()
-            return redirect('archivo_list')  # o la vista que tengas
+            return redirect(f"{reverse('archivo_editar', args=[archivo.pk])}?success=edit")
     else:
         form = ArchivoForm(instance=archivo)
-    return render(request, 'gestion/archivo_form.html', {'form': form})
+    return render(request, 'gestion/archivo_editar.html', {'form': form})
 
 @user_passes_test(lambda u: u.is_staff)
 def archivo_delete(request, pk):

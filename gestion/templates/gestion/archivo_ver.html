@@ -25,21 +25,17 @@
     {% elif archivo.extension in "jpg jpeg png" %}
         <img src="{{ archivo.archivo.url }}" alt="Imagen" style="max-width: 100%; height: auto;"/>
 
-    {% elif archivo.extension in "ppt pptx pps ppsx" %}
-        <iframe src="https://view.officeapps.live.com/op/embed.aspx?src={{ request.build_absolute_uri(archivo.archivo.url) }}"
-                width="100%" height="600px" frameborder="0">Este navegador no puede mostrar presentaciones.</iframe>
+    {% elif archivo.extension in "ppt pptx pps ppsx doc docx" %}
+        <!-- Mostrar con Office Viewer -->
+        <iframe src="{{ enlace_modificado }}" width="100%" height="600px" frameborder="0"></iframe>
 
-    {% elif archivo.extension in "doc docx" %}
-        <iframe src="https://view.officeapps.live.com/op/embed.aspx?src={{ request.build_absolute_uri(archivo.archivo.url) }}"
-                width="100%" height="600px" frameborder="0">Este navegador no puede mostrar documentos Word.</iframe>
-
-   
     {% else %}
         <p>Archivo descargable: <a href="{{ archivo.archivo.url }}" download>📤 Descargar</a></p>
     {% endif %}
 
-    {% elif archivo.enlace_externo %}
+  {% elif archivo.enlace_externo %}
     <h3>🔗 Contenido externo</h3>
+
     {% if "youtube.com" in archivo.enlace_externo or "youtu.be" in archivo.enlace_externo %}
         <!-- YouTube -->
         <iframe width="100%" height="500px"
@@ -47,21 +43,23 @@
             frameborder="0" allowfullscreen>
         </iframe>
 
-       {% elif "drive.google.com" in archivo.enlace_externo %}
-        <!-- Google Drive (PDF/Vídeo) -->
-        <iframe src="{{ archivo.enlace_externo|replace:'view?usp=sharing','preview' }}"
-            width="100%" height="600px" allow="autoplay"></iframe>
+    {% elif "drive.google.com" in archivo.enlace_externo %}
+        <!-- Google Drive: Mostrar enlace si hay error -->
+        <p>Si el contenido no se carga correctamente, haz clic aquí:</p>
+        <a href="{{ archivo.enlace_externo }}" target="_blank">📄 Ver archivo en Google Drive</a>
+        <iframe src="{{ enlace_modificado }}" width="100%" height="600px" allow="autoplay"></iframe>
 
-       {% else %}
-        <!-- Otros enlaces externos (directos a PDF, video, etc.) -->
-        <iframe src="{{ archivo.enlace_externo }}" width="100%" height="600px" style="border: none;">
-            Tu navegador no puede mostrar este recurso.
-            <p>⚠️ Si no se carga el contenido, <a href="{{ archivo.enlace_externo }}" target="_blank">haz clic aquí para abrir en nueva pestaña</a>.</p>
-        </iframe>
-       {% endif %}    
+    {% elif enlace_modificado %}
+        <!-- Office Online Viewer u otros -->
+        <iframe src="{{ enlace_modificado }}" width="100%" height="600px" frameborder="0"></iframe>
+
     {% else %}
-        <p>⚠️ No hay archivo disponible.</p>
+        <p><a href="{{ archivo.enlace_externo }}" target="_blank">📄 Abrir enlace externo</a></p>
     {% endif %}
+
+  {% else %}
+    <p>⚠️ No hay archivo disponible.</p>
+  {% endif %}
 </div>
 {% endblock %}
 </div>

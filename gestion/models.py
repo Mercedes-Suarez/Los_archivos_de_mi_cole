@@ -49,9 +49,9 @@ class Archivo(models.Model):
     
     @property
     def extension(self):
-        if self.archivo:
+        if self.archivo and hasattr(self.archivo, 'name'):
             return self.archivo.name.split('.')[-1].lower()
-        return None
+        return ''
 
     def __str__(self):
         return f"{self.nombre_archivo} - {self.asignatura}"

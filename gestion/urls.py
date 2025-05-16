@@ -16,7 +16,7 @@ urlpatterns = [
     path('nuevo/', views.archivo_create, name='archivo_create'),
     path('archivos/', views.archivo_list, name='archivo_list'),
     path('archivo/<int:pk>/ver/', views.archivo_ver, name='archivo_ver'),
-    path('archivo/editar/<int:pk>', views.editar_archivo, name='editar_archivo'),
+    path('archivo/editar/<int:pk>', views.archivo_editar, name='archivo_editar'),
     path('archivo/<int:pk>/eliminar/', archivo_delete, name='archivo_delete'),
   
     # Gestión de asignaturas
