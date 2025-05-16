@@ -108,12 +108,22 @@ def archivo_ver(request, pk):
     archivo = get_object_or_404(Archivo, pk=pk)
 
     enlace_modificado = None
+    texto_contenido = None
 
-    if archivo.enlace_externo:
+    if archivo.archivo and archivo.extension == "txt":
+        try:
+            with archivo.archivo.open('r') as f:
+                texto_contenido = f.read()
+        except Exception as e:
+            texto_contenido = f"⚠️ Error al leer el archivo: {str(e)}"
+    
+    elif archivo.enlace_externo:
+
         if "drive.google.com" in archivo.enlace_externo:
             # Usamos el enlace sin modificar para mostrar en otra pestaña
             enlace_modificado = archivo.enlace_externo.replace("view?usp=sharing", "preview")
         elif archivo.enlace_externo.endswith(('.doc', '.docx', '.ppt', '.pptx')):
+            import urllib.parse
             # Usamos visor de Microsoft
             enlace_modificado = (
                 "https://view.officeapps.live.com/op/view.aspx?src=" +
@@ -123,9 +133,11 @@ def archivo_ver(request, pk):
             enlace_modificado = archivo.enlace_externo
 
     elif archivo.archivo:
-        full_url = request.build_absolute_uri(archivo.archivo.url)
         if archivo.extension in ['doc', 'docx', 'ppt', 'pptx']:
-            enlace_modificado = (
+           import urllib.parse
+           full_url = request.build_absolute_uri(archivo.archivo.url)
+        
+           enlace_modificado = (
                 "https://view.officeapps.live.com/op/view.aspx?src=" +
                 urllib.parse.quote(full_url, safe='')
             )
@@ -133,6 +145,7 @@ def archivo_ver(request, pk):
     return render(request, 'gestion/archivo_ver.html', {
         'archivo': archivo,
         'enlace_modificado': enlace_modificado,
+        'texto_contenido': texto_contenido
     })
 
 @user_passes_test(lambda u: u.is_staff)
