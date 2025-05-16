@@ -17,6 +17,7 @@ class Usuario(AbstractUser):
     pass
 
 class Alumno(models.Model):
+    usuario = models.OneToOneField('gestion.Usuario', on_delete=models.CASCADE, null=True, blank=True)
     nombre = models.CharField(max_length=100)
     curso = models.CharField(max_length=2, choices=CURSOS)
 
@@ -46,5 +47,11 @@ class Archivo(models.Model):
     def nombre_archivo(self):
         return self.archivo.name.split('/')[-1] if self.archivo else "Enlace"
     
+    @property
+    def extension(self):
+        if self.archivo:
+            return self.archivo.name.split('.')[-1].lower()
+        return None
+
     def __str__(self):
         return f"{self.nombre_archivo} - {self.asignatura}"

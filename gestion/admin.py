@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Archivo, Asignatura
+from .models import Archivo, Asignatura, Alumno
 
 @admin.register(Archivo)
 class ArchivoAdmin(admin.ModelAdmin):
@@ -11,4 +11,11 @@ class ArchivoAdmin(admin.ModelAdmin):
 @admin.register(Asignatura)
 class AsignaturaAdmin(admin.ModelAdmin):
     list_display = ('nombre',)
+
+@admin.register(Alumno)
+class AlumnoAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'curso')
+    list_filter = ('curso',)
+    search_fields = ('nombre',)
+    ordering = ('curso', 'nombre')
 

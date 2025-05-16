@@ -1,72 +1,9 @@
 {% extends 'gestion/base.html' %}
 {% load static %}
-
 {% block title %}Crear Asignatura{% endblock %}
 
+<div id="main-content">
 {% block content %}
-<style>
-    .form-container {
-        max-width: 400px;
-        margin: 30px auto;
-        padding: 20px;
-        border: 1px solid #ccc;
-        border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        background-color: #f9f9f9;
-    }
-
-    .form-container h2 {
-        text-align: center;
-        margin-bottom: 20px;
-    }
-
-    .form-group {
-        margin-bottom: 15px;
-    }
-
-    label {
-        display: block;
-        font-weight: bold;
-        margin-bottom: 5px;
-    }
-
-    input[type="text"] {
-        width: 100%;
-        padding: 8px 10px;
-        border: 1px solid #aaa;
-        border-radius: 6px;
-    }
-
-    .btn-submit {
-        background-color: #4CAF50;
-        color: white;
-        padding: 10px 15px;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-    }
-
-    .btn-submit:hover {
-        background-color: #45a049;
-    }
-
-    .message {
-        text-align: center;
-        margin-bottom: 15px;
-        padding: 10px;
-        border-radius: 6px;
-    }
-
-    .message-success {
-        background-color: #d4edda;
-        color: #155724;
-    }
-
-    .message-error {
-        background-color: #f8d7da;
-        color: #721c24;
-    }
-</style>
 
 <div class="form-container">
     <h2>Crear Nueva Asignatura</h2>
@@ -96,8 +33,9 @@
             {% endif %}
         </div>
 
-        <button type="submit" class="btn-submit">Guardar</button>
-        <a href="{% url 'asignatura_list' %}">Cancelar</a>
+        <button class="btn btn-guardar" type="submit" class="btn-submit">💾 Guardar</button>
+        <a class="btn btn-cancelar" href="{% url 'asignatura_list' %}">🔙 Cancelar</a>
     </form>
 </div>
 {% endblock %}
+</div>

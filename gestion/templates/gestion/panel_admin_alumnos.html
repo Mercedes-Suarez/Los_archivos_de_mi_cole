@@ -1,0 +1,31 @@
+{% extends 'gestion/base.html' %}
+{% block title %}Panel de Alumnos{% endblock %}
+<div id="main-content">
+{% block content %}
+<h2>📋 Panel de seguimiento por alumno</h2>
+
+{% if alumnos %}
+    <ul>
+    {% for alumno in alumnos %}
+        <li>
+            <strong>{{ alumno.nombre }} ({{ alumno.get_curso_display }})</strong><br>
+            {% if alumno.usuario %}
+                Archivos subidos: 
+                <ul>
+                {% for archivo in alumno.usuario.archivo_set.all %}
+                    <li>{{ archivo.nombre_archivo }} - {{ archivo.asignatura }} - {{ archivo.trimestre }}</li>
+                {% empty %}
+                    <li>⚠️ Sin archivos</li>
+                {% endfor %}
+                </ul>
+            {% else %}
+                🚫 Sin usuario vinculado
+            {% endif %}
+        </li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No hay alumnos registrados.</p>
+{% endif %}
+{% endblock %}
+</div>

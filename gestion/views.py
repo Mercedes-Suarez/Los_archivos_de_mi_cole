@@ -1,11 +1,15 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import user_passes_test, login_required
 from django.contrib.auth import logout, get_user_model
+from django.contrib.auth.models import Group
+from django.contrib.auth.hashers import make_password
 from django.contrib import messages
 
 
 from .models import Archivo,Alumno, Asignatura, CURSOS, TRIMESTRES
-from .forms import ArchivoForm, AsignaturaForm, RegistroForm, AlumnoForm
+from .forms import ArchivoForm, AsignaturaForm, RegistroForm, AlumnoForm, Archivo
+
+import re
 
 Usuario = get_user_model()
 
@@ -95,7 +99,16 @@ def archivo_list(request):
            
     }
     return render(request, 'gestion/archivo_list.html', context)
-    
+
+def archivo_ver(request, pk):
+    archivo = get_object_or_404(Archivo, pk=pk)
+
+     # Validar que el enlace externo sea seguro (solo dominios permitidos)
+    if archivo.enlace_externo and not re.match(r'^https?:\/\/(drive\.google\.com|youtube\.com|youtu\.be|dropbox\.com|onedrive\.live\.com|yourdomain\.com)', archivo.enlace_externo):
+        archivo.enlace_externo = None  # O marca como no confiable
+
+    return render(request, 'gestion/archivo_ver.html', {'archivo': archivo})
+
 @user_passes_test(lambda u: u.is_staff)
 def archivo_create(request):
     if request.method == 'POST':
@@ -185,23 +198,57 @@ def asignatura_delete(request, pk):
         return redirect('asignatura_list')
     return render(request, 'gestion/asignatura_confirm_delete.html', {'asignatura': asignatura})
 
-# Vistas para CRUD de Alumnos
-@user_passes_test(lambda u: u.is_staff)
-def alumno_list(request):
-    alumnos = Alumno.objects.all()
-    return render(request, 'gestion/alumno_list.html', {'alumnos': alumnos})
+User = get_user_model()
 
+# Vistas para CRUD de Alumnos
 @user_passes_test(lambda u: u.is_staff)
 def alumno_create(request):
     if request.method == 'POST':
         form = AlumnoForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, "Alumno creado correctamente.")
+            alumno = form.save(commit=False)
+
+            # Crear usuario asociado
+            username = alumno.nombre.lower().replace(" ", "_")
+            password = User.objects.make_random_password()  # O asigna una fija tipo 'colegio123'
+
+            usuario = User.objects.create(
+                username=username,
+                password=make_password(password),
+                email="",  # Opcional
+            )
+
+            # Marcar como alumno
+            usuario.es_alumno = True
+            usuario.save()
+
+            # Enlazar con el alumno
+            alumno.usuario = usuario
+            alumno.save()
             return redirect('alumno_list')
     else:
         form = AlumnoForm()
     return render(request, 'gestion/alumno_form.html', {'form': form})
+
+@user_passes_test(lambda u: u.is_staff)
+def alumno_list(request):
+    curso_filtro = request.GET.get('curso')
+    buscar = request.GET.get('buscar', '')
+
+    alumnos = Alumno.objects.all()
+    if curso_filtro:
+        alumnos = alumnos.filter(curso=curso_filtro)
+    if buscar:
+        alumnos = alumnos.filter(nombre__icontains=buscar)
+
+    cursos = Alumno._meta.get_field('curso').choices
+
+    return render(request, 'gestion/alumno_list.html', {
+        'alumnos': alumnos,
+        'cursos': cursos,
+        'curso_filtro': curso_filtro,
+        'buscar': buscar,
+    })
 
 @user_passes_test(lambda u: u.is_staff)
 def alumno_edit(request, pk):
@@ -224,3 +271,13 @@ def alumno_delete(request, pk):
         messages.success(request, "Alumno eliminado correctamente.")
         return redirect('alumno_list')
     return render(request, 'gestion/alumno_confirm_delete.html', {'alumno': alumno})
+
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def panel_admin_alumnos(request):
+    alumnos = Alumno.objects.select_related('usuario').all()
+
+    context = {
+        'alumnos': alumnos,
+    }
+    return render(request, 'gestion/panel_admin_alumnos.html', context)

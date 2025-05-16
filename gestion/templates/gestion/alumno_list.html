@@ -1,26 +1,46 @@
 {% extends 'gestion/base.html' %}
+{% block title %}Listado de Alumnos{% endblock %}
+<div id="main-content">
 {% block content %}
-<h2>Mis Alumnos</h2>
-<a href="{% url 'alumno_create' %}">➕ Crear nuevo alumno</a>
-<table>
-    <thead>
+<h2>Listado de Alumnos</h2>
+
+<form method="get">
+    <label>Filtrar por curso:</label>
+    <select name="curso" onchange="this.form.submit()">
+        <option value="">Todos</option>
+        {% for codigo, nombre in cursos %}
+            <option value="{{ codigo }}" {% if curso_filtro == codigo %}selected{% endif %}>
+                {{ nombre }}
+            </option>
+        {% endfor %}
+    </select>
+    <input type="text" name="buscar" placeholder="Buscar por nombre" value="{{ buscar }}">
+    <button type="submit">🔍 Buscar</button>
+</form>
+
+<a href="{% url 'alumno_create' %}">➕ Nuevo Alumno</a>
+
+{% if alumnos %}
+<table border="1" cellspacing="0" cellpadding="5">
         <tr>
-            <th>Nombre</th>
-            <th>Curso</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for alumno in alumnos %}
+        <th>Nombre</th>
+        <th>Curso</th>
+        <th>Acciones</th>
+    </tr>
+    {% for alumno in alumnos %}
         <tr>
             <td>{{ alumno.nombre }}</td>
             <td>{{ alumno.get_curso_display }}</td>
             <td>
-                <a href="{% url 'alumno_edit' alumno.pk %}">✏️ Editar</a> |
-                <a href="{% url 'alumno_delete' alumno.pk %}">🗑️ Eliminar</a>
+                <a class="btn btn-editar" href="{% url 'alumno_edit' alumno.pk %}">✏️ Editar</a> |
+                <a class="btn btn-eliminar" href="{% url 'alumno_delete' alumno.pk %}">🗑️ Eliminar</a>
             </td>
         </tr>
-        {% endfor %}
-    </tbody>
-</table>
+    {% endfor %}
+    </table>
+    {% else %}
+<p>❌ No hay alumnos que coincidan con los filtros o búsqueda.</p>
+{% endif %}
 {% endblock %}
+</div>
+

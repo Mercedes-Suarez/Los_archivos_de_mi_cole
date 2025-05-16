@@ -9,7 +9,7 @@ class AlumnoForm(forms.ModelForm):
         fields = ['nombre', 'curso']
         labels = {
             'nombre': 'Nombre del alumno',
-            'curso': 'CuCurso',
+            'curso': 'Curso',
         }
 
 class RegistroForm(UserCreationForm):

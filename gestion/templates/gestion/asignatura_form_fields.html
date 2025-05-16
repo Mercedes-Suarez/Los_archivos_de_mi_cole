@@ -1,0 +1,19 @@
+{% extends 'gestion/base.html' %}
+{% block title %}Formulario Asignatura{% endblock %}
+
+<div id="main-content">
+{% block content %}
+{% for field in form %}
+    <p>
+        {{ field.label_tag }}
+        {{ field }}
+        {% if field.help_text %}
+            <small style="color: gray;">{{ field.help_text }}</small><br>
+        {% endif %}
+        {% for error in field.errors %}
+            <span style="color: red;">{{ error }}</span>
+        {% endfor %}
+    </p>
+{% endfor %}
+{% endblock %}
+</div>

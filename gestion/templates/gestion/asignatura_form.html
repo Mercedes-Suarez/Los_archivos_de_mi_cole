@@ -1,16 +1,17 @@
 {% extends 'gestion/base.html' %}
+{% block title %}Formulario Asignatura{% endblock %}
 
-{% block title %}{{ form.instance.pk|yesno:"Editar Asignatura,Nueva Asignatura" }}{% endblock %}
 
+<div id="main-content">
 {% block content %}
 <h2>{{ form.instance.pk|yesno:"Editar Asignatura,Nueva Asignatura" }}</h2>
 
 <form method="post">
     {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Guardar</button>
+    {% include "gestion/asignatura_form_fields.html" %}
+    <button class="btn btn-guardar" type="submit">💾 Guardar</button>
+    <a class="btn btn-cancelar" href="{% url 'asignatura_list' %}">🔙 Volver</a>
 </form>
-
-<a href="{% url 'asignatura_list' %}">Volver al listado</a>
 {% endblock %}
+</div>
 

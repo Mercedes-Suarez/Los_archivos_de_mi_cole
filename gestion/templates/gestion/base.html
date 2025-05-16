@@ -1,36 +1,71 @@
 {% load static %}
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>{% block title %}Los Archivos de Mi Cole{% endblock %}</title>
+    <title>{% block title %}Los Archivos de Mi Cole 🏫{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body>
     <header>
-        <h1>Los Archivos de Mi Cole</h1>
-        <nav>
-          <ul>
-            <li><a href="{% url 'inicio' %}">Inicio</a></li>
-            <li><a href="{% url 'archivo_list' %}">Ver archivos</a></li>
-            {% if user.is_authenticated %}
-                {% if user.is_staff %}
-                    <li><a href="{% url 'asignatura_list' %}">Asignaturas</a></li>
-                    <li><a href="{% url 'archivo_create' %}">Subir archivo</a></li>
-                    <li><a href="{% url 'alumno_list' %}">👨‍🎓 Mis Alumnos</a></li>
+        <div class="navbar">
+            <h1>Los Archivos de Mi Cole</h1>
+                <div class="menu-toggle" onclick="toggleMenu()">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+    <!-- Menú horizontal para escritorio -->
+            <nav class="main-menu">              
+              <ul>
+                <li><a href="{% url 'inicio' %}">🏠 Inicio</a></li>
+                <li><a href="{% url 'registro' %}">🧾 Regístrate</a></li>
+
+                {% if user.is_authenticated %}
+                    {% if user.is_staff %}
+                        <li><a href="{% url 'archivo_list' %}">📄  Archivos</a></li>
+                        <li><a href="{% url 'asignatura_list' %}">📚 Asignaturas</a></li>
+                        <li><a href="{% url 'archivo_create' %}">📥 Subir archivo</a></li>
+                        <li><a href="{% url 'alumno_list' %}">👨‍🎓 Mis Alumnos</a></li>
+                    {% endif %}
+                    <li>
+                        <form method="post" action="{% url 'logout' %}" style="display:inline;">
+                             {% csrf_token %}
+                             <button type="submit" style="background:none;border:none;color:blue;cursor:pointer;padding:0;">🔐 Cerrar sesión</button>
+                        </form>
+                    </li>
+                {% else %}
+                    <li><a href="{% url 'login' %}"> 🔓 Iniciar sesión</a></li>
                 {% endif %}
-                <li>
-                    <form method="post" action="{% url 'logout' %}" style="display:inline;">
-                         {% csrf_token %}
-                         <button type="submit" style="background:none;border:none;color:blue;cursor:pointer;padding:0;">Cerrar sesión</button>
-                    </form>
-                </li>
-            {% else %}
-                <li><a href="{% url 'login' %}">Iniciar sesión</a></li>
-            {% endif %}
-           </ul>
-        </nav>
+               </ul>
+             </nav>   
+    <!-- Menú lateral oculto (solo para móviles) -->            
+             <nav id="side-menu" class="side-menu">              
+              <ul>
+                <li><a href="{% url 'inicio' %}">🏠 Inicio</a></li>
+                
+                {% if user.is_authenticated %}
+                    {% if user.is_staff %}
+                        <li><a href="{% url 'archivo_list' %}">📄  Archivos</a></li>
+                        <li><a href="{% url 'asignatura_list' %}">📚 Asignaturas</a></li>
+                        <li><a href="{% url 'archivo_create' %}">📥 Subir archivo</a></li>
+                        <li><a href="{% url 'alumno_list' %}">👨‍🎓 Mis Alumnos</a></li>
+                    {% endif %}
+                    <li>
+                        <form method="post" action="{% url 'logout' %}" style="display:inline;">
+                             {% csrf_token %}
+                             <button type="submit" style="background:none;border:none;color:blue;cursor:pointer;padding:0;">🔐 Cerrar sesión</button>
+                        </form>
+                    </li>
+                {% else %}
+                    <li><a href="{% url 'login' %}"> 🔓 Iniciar sesión</a></li>
+                {% endif %}
+               </ul>
+             </nav>
+            <div id="overlay" class="overlay" onclick="toggleMenu()"></div>
+        </div>
         <hr>
     </header>
     <main>
@@ -41,27 +76,48 @@
               {% endfor %}
           </ul>
         {% endif %}
-
-        {% block content %}{% endblock %}
+        <div id="main-content">
+          {% block content %}{% endblock %}
+        </div>
     </main>
 
-    
-    <footer>
-        <hr>
-        <p style="text-align:center;">&copy; {{ now|date:"Y" }} Mi Cole</p>
-    </footer>
+        <script>
+            // Menu Hamburguesa
+            function toggleMenu() {
+                const navList = document.getElementById('nav-list');
+                const menu = document.getElementById('side-menu');
+                const overlay = document.getElementById('overlay');
+                const main = document.getElementById('main-content');
 
-    <script>
-       // Cierra automáticamente los mensajes después de 4 segundos (4000 milisegundos)
-       setTimeout(() => {
-           const messages = document.querySelectorAll('ul.messages li');
-           messages.forEach(msg => {
-              msg.style.transition = 'opacity 0.5s ease';
-              msg.style.opacity = '0';
-             setTimeout(() => msg.remove(), 500);
-             });
-        }, 4000);
+                navList.classList.toggle('show');
+                menu.classList.toggle('open');
+                overlay.classList.toggle('show');
+                main.classList.toggle('pushed');
+            }
+
+            // Cierra al hacer clic en un enlace del menú
+            document.querySelectorAll('.side-menu a').forEach(link => {
+                link.addEventListener('click', () => {
+                  document.getElementById('side-menu').classList.remove('open');
+                  document.getElementById('overlay').classList.remove('show');
+                });
+            });
+
+            // Cierra automáticamente los mensajes después de 4 segundos (4000 milisegundos)
+            setTimeout(() => {
+              const messages = document.querySelectorAll('ul.messages li');
+              messages.forEach(msg => {
+                msg.style.transition = 'opacity 0.5s ease';
+                msg.style.opacity = '0';
+                setTimeout(() => msg.remove(), 500);
+              });
+            }, 4000);
     </script>
 
 </body>
+<footer>
+    <hr>
+      <p style="text-align:center;">&copy; {{ now|date:"Y" }} Mi Cole - By Mercedes Suárez</p>
+</footer>
 </html>
+

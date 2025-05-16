@@ -1,13 +1,12 @@
 {% extends 'gestion/base.html' %}
 
 {% block title %}Iniciar sesión{% endblock %}
-
+<div id="main-content">
 {% block content %}
 <h2>Iniciar sesión</h2>
 
 <form method="post">
-    {% csrf_token %}
-    
+    {% csrf_token %}    
 
      <p>
        <label for="{{ form.username.id_for_label }}">Usuario:</label>
@@ -21,8 +20,9 @@
            autocomplete="off">
      </p>
 
-     <button type="submit">Iniciar sesión</button>
+     <button type="submit">🔐 Iniciar sesión</button>
 </form>
 
-<p>¿No tienes cuenta? <a href="{% url 'registro' %}">Regístrate</a></p>
+<p>¿No tienes cuenta? <a href="{% url 'registro' %}">🧾 Regístrate</a></p>
 {% endblock %}
+</div>

@@ -1,10 +1,17 @@
 {% extends 'gestion/base.html' %}
+{% block title %}Formulario Alumnos{% endblock %}
+
+<div id="main-content">
 {% block content %}
-<h2>{% if form.instance.pk %}Editar Alumno{% else %}Crear Alumno{% endif %}</h2>
+
+<h2>{% if alumno %}Editar{% else %}Nuevo{% endif %} Alumno</h2>
+
 <form method="post">
+
     {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Guardar</button>
+    {% include "gestion/alumno_form_fields.html" %}
+    <button class="btn btn-guardar" type="submit">💾 Guardar</button>
+    <a class="btn btn-cancelar" href="{% url 'alumno_list' %}">❌ Cancelar</a>
 </form>
-<a href="{% url 'alumno_list' %}">⬅️ Volver al listado</a>
 {% endblock %}
+</div>

@@ -15,6 +15,7 @@ urlpatterns = [
 
     path('nuevo/', views.archivo_create, name='archivo_create'),
     path('archivos/', views.archivo_list, name='archivo_list'),
+    path('archivo/<int:pk>/ver/', views.archivo_ver, name='archivo_ver'),
     path('archivo/editar/<int:pk>', views.editar_archivo, name='editar_archivo'),
     path('archivo/<int:pk>/eliminar/', archivo_delete, name='archivo_delete'),
   
@@ -31,6 +32,8 @@ urlpatterns = [
     path('alumnos/nuevo/', views.alumno_create, name='alumno_create'),
     path('alumnos/<int:pk>/editar/', views.alumno_edit, name='alumno_edit'),
     path('alumnos/<int:pk>/eliminar/', views.alumno_delete, name='alumno_delete'),
+
+    path('panel/alumnos/', views.panel_admin_alumnos, name='panel_admin_alumnos'),
 
 ]
 

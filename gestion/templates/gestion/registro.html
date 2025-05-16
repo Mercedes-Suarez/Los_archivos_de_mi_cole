@@ -1,11 +1,13 @@
 {% extends 'gestion/base.html' %}
 {% block title %}Registro de usuario{% endblock %}
+<div id="main-content">
 {% block content %}
 <h2>Registro de usuario</h2>
 <form method="post">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit">Registrarse</button>
+    <button type="submit">✅ Registrarse</button>
 </form>
-<p>¿Ya tienes cuenta? <a href="{% url 'login' %}">Inicia sesión</a></p>
+<p>¿Ya tienes cuenta? <a href="{% url 'login' %}">🔐 Inicia sesión</a></p>
 {% endblock %}
+</div>

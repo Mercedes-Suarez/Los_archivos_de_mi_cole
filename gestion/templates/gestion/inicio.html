@@ -2,16 +2,18 @@
 
 {% load static %}
 
-{% block title %}Inicio{% endblock %}
-
+{% block title %}Los Archivos de Mi Cole{% endblock %}
+<div id="main-content">
 {% block content %}
 <h2>Bienvenido a Los Archivos de Mi Cole</h2>
 <p>Esta plataforma permite a estudiantes y administradores gestionar los archivos escolares.</p>
 
 {% if user.is_authenticated %}
-    <p>Hola, {{ user.username }}. Puedes ver los <a href="{% url 'archivo_list' %}">archivos</a>.</p>
+    <p>Hola, {{ user.username }}. </p>
+    <p>Aquí podras ver los <a href="{% url 'archivo_list' %}">archivos.</a></p>
+    
 {% else %}
-    <p><a href="{% url 'login' %}">Inicia sesión</a> para acceder a los archivos.</p>
+    <p><a href="{% url 'login' %}">🔓 Inicia sesión</a> para acceder a los archivos.</p>
 {% endif %}
 
 
@@ -65,3 +67,4 @@
 </script>
 
 {% endblock %}
+</div>

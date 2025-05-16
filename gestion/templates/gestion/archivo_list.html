@@ -1,14 +1,15 @@
 {% extends 'gestion/base.html' %}
+{% block title %}Listado Archivo{% endblock %}
 
-{% block title %}Listado de Archivos{% endblock %}
+<div id="main-content">
 
 {% block content %}
 <h2>Listado de Archivos</h2>
 {% if user.is_staff %}
-    <a href="{% url 'archivo_create' %}">Subir nuevo archivo</a>
+    <a href="{% url 'archivo_create' %}">📥 Subir nuevo archivo</a>
 {% endif %}
 <p>Sesión iniciada como: {{ user.username }}</p>
-<a href="{% url 'logout' %}">Cerrar sesión</a>
+<a href="{% url 'logout' %}">🔓 Cerrar sesión</a>
 <form method="get">
     <label>Asignatura:</label>
     <select name="asignatura">
@@ -67,9 +68,9 @@
             {% if archivo.archivo %}
                 <a href="{{ archivo.archivo.url }}" target="_blank">{{ archivo.archivo.name|cut:"archivos/" }}</a>
             {% elif archivo.enlace_externo %}
-                <a href="{{ archivo.enlace_externo }}" target="_blank">Abrir enlace externo</a>
+                <a href="{{ archivo.enlace_externo }}" target="_blank">🔗 Abrir enlace externo</a>
             {% else %}
-                <span>No hay archivo disponible</span>
+                <span>⚠️  No hay ningun archivo disponible</span>
             {% endif %}
         </td>
         <td>{{ archivo.asignatura }}</td>
@@ -82,17 +83,18 @@
           <td>
             <form method="post" action="{% url 'archivo_delete' archivo.pk %}">
                 {% csrf_token %}
-                <button type="submit">Eliminar</button>
+                <button class="btn btn-eliminar" type="submit">🗑️ Eliminar</button>
+                <a class="btn btn-cancelar" href="{% url 'archivo_list' %}">❌ Cancelar</a>
             </form>
          </td>
         {% else %}
              <td>
                   {% if archivo.archivo %}
-                       <a href="{{ archivo.archivo.url }}" target="_blank">Ver</a>
+                      <a href="{% url 'archivo_ver' archivo.pk %}">👁️ Ver</a>
                   {% elif archivo.enlace_externo %}
-                      <a href="{{ archivo.enlace_externo }}" target="_blank">Abrir</a>
+                      <a href="{{ archivo.enlace_externo }}" target="_blank">📂 Abrir</a>
                   {% else %}
-                  <span>No disponible</span>
+                  <span>⚠️ No disponible</span>
                   {% endif %}
                </td>
         {% endif %}
@@ -100,3 +102,4 @@
     {% endfor %}
 </table>
 {% endblock %}
+</div>

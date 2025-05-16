@@ -1,9 +1,14 @@
 {% extends 'gestion/base.html' %}
+{% block title %}Eliminar Alumno{% endblock %}
+
+<div id="main-content">
 {% block content %}
-<h2>¿Eliminar alumno {{ alumno.nombre }}?</h2>
+<h2>¿Eliminar alumno?</h2>
+<p>¿Estás seguro que quieres eliminar a {{ alumno.nombre }}?</p>
 <form method="post">
     {% csrf_token %}
-    <button type="submit">Sí, eliminar</button>
-    <a href="{% url 'alumno_list' %}">Cancelar</a>
+    <button class="btn btn-eliminar" type="submit"> 🗑️ Sí. Eliminar</button>
+    <a class="btn btn-cancelar" href="{% url 'alumno_list' %}">🔙 Cancelar</a>
 </form>
 {% endblock %}
+</div>

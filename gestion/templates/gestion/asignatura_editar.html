@@ -1,7 +1,9 @@
 {% extends 'gestion/base.html' %}
 {% load static %}
-
 {% block title %}Editar Asignatura{% endblock %}
+
+
+<div id="main-content">
 
 {% block content %}
 <h2>Editar Asignatura</h2>
@@ -32,7 +34,8 @@
         <div style="color: red;">{{ form.nombre.errors }}</div>
     {% endif %}
     
-    <button type="submit">Guardar cambios</button>
-    <a href="{% url 'asignatura_list' %}">Cancelar</a>
+    <button class="btn btn-guardar" type="submit">💾 Guardar cambios</button>
+    <a class="btn btn-cancelar" href="{% url 'asignatura_list' %}">🔙 Cancelar</a>
 </form>
 {% endblock %}
+</div>

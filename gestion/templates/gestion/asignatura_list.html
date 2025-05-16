@@ -1,17 +1,30 @@
 {% extends 'gestion/base.html' %}
+{% block title %}Listado Asignatura{% endblock %}
 
-{% block title %}Asignaturas{% endblock %}
-
+<div id="main-content">
 {% block content %}
 <h2>Listado de Asignaturas</h2>
-<a href="{% url 'asignatura_create' %}">+ Nueva asignatura</a>
-<ul>
+<a href="{% url 'asignatura_create' %}">➕ Nueva asignatura</a>
+
+{% if asignaturas %}
+<table border="1" cellspacing="0" cellpadding="5">
+    <tr>
+        <th>Nombre</th>
+        <th>Acciones</th>
+    </tr>
     {% for asignatura in asignaturas %}
-    <li>
-        {{ asignatura.nombre }}
-        <a href="{% url 'asignatura_edit' asignatura.pk %}">Editar</a>
-        <a href="{% url 'asignatura_delete' asignatura.pk %}">Eliminar</a>
-    </li>
+    <tr>
+        <td>{{ asignatura.nombre }}</td>
+        <td>
+            <a class= "btn btn-editar" href="{% url 'asignatura_edit' asignatura.pk %}">✏️ Editar</a>
+            <a class= "btn-eliminar" href="{% url 'asignatura_delete' asignatura.pk %}">🗑️ Eliminar</a>
+        </td>
+    </tr>
     {% endfor %}
-</ul>
+</table>
+{% else %}
+<p>❌ No hay asignaturas registradas.</p>
+{% endif %}
 {% endblock %}
+</div>
+

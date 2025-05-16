@@ -5,6 +5,51 @@ body {
     color: #333;
 }
 
+/* === Navbar alineado === */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap; /* Por si en pantallas pequeñas se necesita envolver */
+    gap: 20px;
+}
+
+.navbar h1 {
+    margin: 0;
+    font-size: 1.5em;
+}
+
+/* Alineación horizontal de los elementos del nav */
+nav ul {
+    list-style: none;
+    display: flex;
+    gap: 15px;
+    margin: 0;
+    padding: 0;
+}
+
+nav li {
+    display: flex;
+    align-items: center;
+}
+
+nav form {
+    margin: 0;
+}
+
+#main-content {
+  transition: margin-left 0.3s ease;
+}
+
+#main-content.pushed {
+  margin-left: 250px; /* ancho del menú */
+}
+
+button {
+    font-family: inherit;
+}
+
+
 h1, h2 {
     color: #2c3e50;
 }
@@ -52,9 +97,34 @@ table td, table th {
     color: white;
 }
 
+.btn-editar:hover {
+    background-color: #e08e0b;
+}
+
+.btn-guardar {
+    background-color: #4CAF50;
+    color: white;
+}
+.btn-guardar:hover {
+    background-color: #45a049;
+}
+
 .btn-eliminar {
     background-color: #e74c3c;
     color: white;
+}
+
+.btn-eliminar:hover {
+    background-color: #c0392b;
+}
+
+.btn-cancelar {
+    background-color: #ccc;
+    color: black;
+}
+
+.btn-cancelar:hover {
+    background-color: #bbb;
 }
 
 .btn:hover {
@@ -99,12 +169,15 @@ ul.messages {
 
 .carousel {
     position: relative;
-    height: 60px;
+    height: 100px;
     margin-top: 30px;
     overflow: hidden;
-    font-size: 1.2em;
+    font-size: 1.5em;
     font-weight: bold;
     text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center
 }
 .slide {
     position: absolute;
@@ -127,9 +200,9 @@ ul.messages {
 
 .carousel-images {
   width: 100%;
-  max-width: 600px;
+  max-width: 800px;
   overflow: hidden;
-  height: 300px; /* Fijar una altura */
+  height: 400px;
   position: relative;
   margin: 20px auto;
   border-radius: 12px;
@@ -174,3 +247,248 @@ input[type="text"]:focus, select:focus {
     border-radius: 8px;
     box-shadow: 0 0 5px rgba(0,0,0,0.1);
 }
+/* === Estilos para crear asignaturas === */
+.form-container {
+        max-width: 400px;
+        margin: 30px auto;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        background-color: #f9f9f9;
+    }
+
+    .form-container h2 {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    input[type="text"] {
+        width: 100%;
+        padding: 8px 10px;
+        border: 1px solid #aaa;
+        border-radius: 6px;
+    }
+
+    .btn-submit {
+        background-color: #4CAF50;
+        color: white;
+        padding: 10px 15px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+    }
+
+    .btn-submit:hover {
+        background-color: #45a049;
+    }
+
+    .message {
+        text-align: center;
+        margin-bottom: 15px;
+        padding: 10px;
+        border-radius: 6px;
+    }
+
+    .message-success {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .message-error {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    /* ===== NAVBAR RESPONSIVE ===== */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+nav ul {
+    list-style: none;
+    display: flex;
+    gap: 15px;
+    margin: 0;
+    padding: 0;
+}
+
+nav li {
+    display: flex;
+    align-items: center;
+}
+
+/* Botón hamburguesa oculto por defecto */
+.menu-toggle {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+    z-index: 1001;
+}
+
+.menu-toggle span {
+    width: 25px;
+    height: 3px;
+    background-color: #333;
+    margin: 4px 0;
+}
+/* === MENÚ LATERAL DESLIZANTE === */
+.side-menu {
+    position: fixed;
+    top: 0;
+    left: -250px;
+    width: 250px;
+    height: 100%;
+    background-color: #ffffff;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    transition: left 0.3s ease;
+    z-index: 1000;
+}
+
+.side-menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding-left: 10px;
+}
+
+.side-menu a, .side-menu button {
+    color: #1c3d5a;
+    font-weight: 600;
+    font-size: 1em;
+}
+
+.side-menu a:hover, .side-menu button:hover {
+    text-decoration: underline;
+    color: #1a5276;
+}
+
+/* === FONDO OSCURO DETRÁS DEL MENÚ === */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    display: none;
+    z-index: 999;
+}
+
+/* === MOSTRAR MENÚ Y FONDO === */
+.side-menu.open {
+    left: 0;
+}
+.overlay.show {
+    display: block;
+}
+
+/* === NAVBAR PARA PC === */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+@media screen and (max-width: 768px) {
+    .menu-toggle {
+        display: flex;
+    }
+
+    nav ul {
+        flex-direction: column;
+    }
+}
+
+/* Oculta el menú en pantallas pequeñas */
+@media screen and (max-width: 768px) {
+    nav ul {
+        flex-direction: column;
+        width: 100%;
+        display: none;
+        background-color: #ffffff;
+        padding: 10px;
+        border-radius: 8px;
+    }
+
+    nav ul.show {
+        display: flex;
+    }
+
+    .menu-toggle {
+        display: flex;
+    }
+
+    .navbar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+/* Menú principal horizontal (visible solo en escritorio) */
+.main-menu {
+  display: flex;
+}
+
+.main-menu ul {
+  display: flex;
+  list-style: none;
+  gap: 15px;
+  padding: 0;
+  margin: 0;
+}
+@media screen and (min-width: 769px) {
+  .side-menu {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 768px) {
+  .main-menu {
+    display: none; /* Oculta menú horizontal en móvil */
+  }
+}
+
+.filtro-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+}
+
+.filtro-form label,
+.filtro-form select,
+.filtro-form button {
+  margin-bottom: 0;
+}
+
+.filtro-form > * {
+  flex: 1 1 auto;
+  min-width: 150px;
+}
+
+@media (max-width: 768px) {
+  .filtro-form {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+

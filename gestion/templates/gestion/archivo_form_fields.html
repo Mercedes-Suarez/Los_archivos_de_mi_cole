@@ -1,6 +1,7 @@
 {% extends 'gestion/base.html' %}
+{% block title %}Formulario Archivo{% endblock %}
 
-{% block title %}Subir Archivo{% endblock %}
+<div id="main-content">
 
 {% block content %}
 <h2>Subir Archivo</h2>
@@ -10,7 +11,7 @@
 
     <p>
         {{ form.archivo.label_tag }} 
-        <label for="id_archivo">Archivo (máx. 10MB):</label>
+        <label for="id_archivo">Archivo (máx. 20MB):</label>
         {{ form.archivo }}<br>
         <span style="color:red">{{ form.archivo.errors }}</span>
     </p>
@@ -35,9 +36,10 @@
     </p>
     <p style="color: gray; font-size: 0.9em;">
         Tamaño máximo permitido para archivos: <strong>20 MB</strong>. 
-        Si el archivo es más grande, sube el documento a Google Drive u otro servicio y pega aquí el <strong>enlace externo</strong>.
+        Si el archivo es más grande, sube el documento a Google Drive u otro servicio y pega aquí el <strong>🔗 enlace externo</strong>.
     </p>
-    <button type="submit">Guardar</button>
+    <button class="btn btn-guardar" type="submit">💾 Guardar</button>
+    <a class="btn btn-cancelar" href="{% url 'archivo_list' %}">❌ Cancelar</a>
 </form>
 
 <script>
@@ -74,10 +76,11 @@
         const enlace = document.querySelector('input[name="enlace_externo"]').value.trim();
 
         if (!archivo && !enlace) {
-            alert("Debes subir un archivo o proporcionar un enlace externo.");
+            alert("❗ ❗ ❗ Debes subir un archivo o proporcionar un enlace externo.");
             event.preventDefault();
         }
     });
 </script>
-  {% endblock %}
+{% endblock %}
+</div>
 
