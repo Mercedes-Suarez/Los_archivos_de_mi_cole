@@ -10,20 +10,28 @@
 
 <div style="margin-top: 20px;">
   {% if archivo.archivo %}
+
+  <!-- Pdf conseguido -->
     {% if archivo.extension == "pdf" %}
-        <embed src="{{ archivo.archivo.url }}" width="100%" height="600px" type="application/pdf"/>
+        <!--<embed src="{{ archivo.archivo.url }}" width="100%" height="600px" type="application/pdf"/> -->
+        <!--  <a href="{{ archivo.archivo.url }}" target="_blank">Ver PDF directo</a>-->
+       <object data="{{ archivo.archivo.url }}" type="application/pdf" width="100%" height="600px">
+           <p>Tu navegador no puede mostrar el PDF. <a href="{{ archivo.archivo.url }}">Descargar PDF</a></p>
+        </object>
 
     {% elif archivo.extension == "mp4" %}
         <video width="100%" height="auto" controls>
             <source src="{{ archivo.archivo.url }}" type="video/mp4">
             Tu navegador no soporta videos HTML5.
         </video>
-
+<!-- Txt conseguido -->
     {% elif archivo.extension == "txt" %}
         <h3>Contenido del archivo de texto:</h3>
         <pre style="background: #f8f8f8; padding: 1em; border: 1px solid #ccc; overflow-x: auto;">
     {{ texto_contenido|linebreaksbr }}
        </pre>
+
+<!-- jpg Conseguido -->       
     {% elif archivo.extension in "jpg jpeg png" %}
         <img src="{{ archivo.archivo.url }}" alt="Imagen" style="max-width: 100%; height: auto;"/>
 
