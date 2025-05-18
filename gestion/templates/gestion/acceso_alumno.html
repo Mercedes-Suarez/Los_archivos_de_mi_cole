@@ -2,14 +2,7 @@
 {% block title %}Acceso alumno{% endblock %}
 
 {% block content %}
-<h2>Acceso para alumnos</h2>
-
-<form method="post">
-    {% csrf_token %}
-    <label for="nombre">Nombre:</label>
-    <input type="text" name="nombre" id="nombre">
-    <button type="submit">👁️ Ver archivos</button>
-</form>
+<h2>Archivos de tu hijo/a</h2>
 
 {% if alumno %}
     <h3>Archivos para {{ alumno.get_curso_display }}</h3>
@@ -26,6 +19,6 @@
         {% endfor %}
     </ul>
 {% elif archivos is not None %}
-    <p>⚠️ ❗ No se encontró el alumno. Verifica el nombre.</p>
+    <p>⚠️ No hay archivos disponibles o no tienes hijos registrados.</p>
 {% endif %}
-</div>
+{% endblock %}

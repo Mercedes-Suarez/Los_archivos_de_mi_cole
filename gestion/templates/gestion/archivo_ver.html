@@ -18,58 +18,53 @@
        <object data="{{ archivo.archivo.url }}" type="application/pdf" width="100%" height="600px">
            <p>Tu navegador no puede mostrar el PDF. <a href="{{ archivo.archivo.url }}">Descargar PDF</a></p>
         </object>
+    {% endif %}
 
-    {% elif archivo.extension == "mp4" %}
+    {% if archivo.extension == "mp4" %}
         <video width="100%" height="auto" controls>
             <source src="{{ archivo.archivo.url }}" type="video/mp4">
-            Tu navegador no soporta videos HTML5.
+            Tu navegador no soporta videos HTML5. <a href="{{ archivo.archivo.url }}">Descargar video</a>.
         </video>
+
+    {% endif %}
 <!-- Txt conseguido -->
-    {% elif archivo.extension == "txt" %}
+    {% if archivo.extension == "txt" %}
         <h3>Contenido del archivo de texto:</h3>
         <pre style="background: #f8f8f8; padding: 1em; border: 1px solid #ccc; overflow-x: auto;">
-    {{ texto_contenido|linebreaksbr }}
+    {{ texto_contenido|linebreaksbr }}"
        </pre>
-
+    {% endif %}
 <!-- jpg Conseguido -->       
-    {% elif archivo.extension in "jpg jpeg png" %}
-        <img src="{{ archivo.archivo.url }}" alt="Imagen" style="max-width: 100%; height: auto;"/>
-
-    {% elif archivo.extension in "ppt pptx pps ppsx doc docx" %}
-        <!-- Mostrar con Office Viewer -->
-        <iframe src="{{ enlace_modificado }}" width="100%" height="600px" frameborder="0"></iframe>
-
-    {% else %}
-        <p>Archivo descargable: <a href="{{ archivo.archivo.url }}" download>📤 Descargar</a></p>
+    {% if archivo.extension == "jpg" or archivo.extension == "jpeg" or archivo.extension == "png" %}
+        <img src="{{ archivo.archivo.url }}" alt="Imagen" style="max-width:100%; height:auto;">
     {% endif %}
 
-  {% elif archivo.enlace_externo %}
-    <h3>🔗 Contenido externo</h3>
-
-    {% if "youtube.com" in archivo.enlace_externo or "youtu.be" in archivo.enlace_externo %}
-        <!-- YouTube -->
-        <iframe width="100%" height="500px"
-            src="https://www.youtube.com/embed/{{ archivo.enlace_externo|cut:'https://youtu.be/'|cut:'https://www.youtube.com/watch?v=' }}"
-            frameborder="0" allowfullscreen>
+    {% if archivo.extension in extensiones_embed %}
+        <iframe src="{{ enlace_modificado }}" width="100%" height="600px" frameborder="0">
+            Este archivo no puede mostrarse. <a href="{{ archivo.archivo.url }}">📤 Descargar aquí</a>.
         </iframe>
 
-    {% elif "drive.google.com" in archivo.enlace_externo %}
-        <!-- Google Drive: Mostrar enlace si hay error -->
-        <p>Si el contenido no se carga correctamente, haz clic aquí:</p>
-        <a href="{{ archivo.enlace_externo }}" target="_blank">📄 Ver archivo en Google Drive</a>
-        <iframe src="{{ enlace_modificado }}" width="100%" height="600px" allow="autoplay"></iframe>
-
-    {% elif enlace_modificado %}
-        <!-- Office Online Viewer u otros -->
-        <iframe src="{{ enlace_modificado }}" width="100%" height="600px" frameborder="0"></iframe>
-
-    {% else %}
-        <p><a href="{{ archivo.enlace_externo }}" target="_blank">📄 Abrir enlace externo</a></p>
+    {% elif archivo.extension == "ppsx" or archivo.extension == "pps" %}
+       <p>⚠️ Este formato no puede visualizarse directamente en línea.</p>
+       <a href="{{ archivo.archivo.url }}">📥 Descargar archivo PPSX</a>
     {% endif %}
 
-  {% else %}
+    {% if enlace_modificado %}
+    <iframe src="{{ enlace_modificado }}" width="100%" height="600px" frameborder="0"></iframe>
+
+    {% if "drive.google.com" in archivo.enlace_externo %}
+        <p>Si el contenido no se carga correctamente, haz clic aquí:</p>
+        <a href="{{ archivo.enlace_externo }}" target="_blank">📄 Ver archivo en Google Drive</a>
+    {% endif %}
+
+    {% elif archivo.enlace_externo %}
+      <p><a href="{{ archivo.enlace_externo }}" target="_blank">📄 Abrir enlace externo</a></p>
+    {% endif %}
+
+   {% else %}
     <p>⚠️ No hay archivo disponible.</p>
   {% endif %}
+
 </div>
 {% endblock %}
 </div>

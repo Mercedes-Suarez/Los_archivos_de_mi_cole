@@ -1,19 +1,22 @@
-import urllib.parse
+import os
+from django.core.files import File
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import user_passes_test, login_required
+from gestion.decorators import solo_padres_y_admins
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout, get_user_model
 from django.contrib.auth.models import Group
 from django.contrib.auth.hashers import make_password
 from django.contrib import messages
-
+from django.core.files.base import ContentFile
+from win32com import client
 
 
 from .models import Archivo,Alumno, Asignatura, CURSOS, TRIMESTRES
 from .forms import ArchivoForm, AsignaturaForm, RegistroForm, AlumnoForm, Archivo
 
-import re
+import os
 
 Usuario = get_user_model()
 
@@ -39,21 +42,20 @@ def logout_with_message(request):
 def inicio(request):
     return render(request, 'gestion/inicio.html')
 
+@login_required
+@solo_padres_y_admins
 def acceso_alumno(request):
-    archivos = None
-    alumno = None
-
-    if request.method == 'POST':
-        nombre = request.POST.get('nombre')
+        usuario = request.user
         try:
-            alumno = Alumno.objects.get(nombre__iexact=nombre)
+            alumno = Alumno.objects.get(padre=usuario)
             archivos = Archivo.objects.filter(curso=alumno.curso)
         except Alumno.DoesNotExist:
             alumno = None
+            archivos = None
 
-    return render(request, 'gestion/acceso_alumno.html', {
-        'archivos': archivos,
-        'alumno': alumno
+        return render(request, 'gestion/acceso_alumno.html', {
+             'alumno': alumno,
+             'archivos': archivos
     })
 
 CURSOS_PRIMARIA = [
@@ -104,69 +106,101 @@ def archivo_list(request):
     }
     return render(request, 'gestion/archivo_list.html', context)
 
-def archivo_ver(request, pk):
-    archivo = get_object_or_404(Archivo, pk=pk)
+EXTENSIONES_EMBED = ["pptx", "docx"]
+
+def archivo_ver(request, id):
+    archivo = get_object_or_404(Archivo, id=id)
 
     enlace_modificado = None
     texto_contenido = None
-
+ # Leer archivos de texto
     if archivo.archivo and archivo.extension == "txt":
         try:
             with archivo.archivo.open('r') as f:
                 texto_contenido = f.read()
         except Exception as e:
             texto_contenido = f"⚠️ Error al leer el archivo: {str(e)}"
-    
-    elif archivo.enlace_externo:
+ 
+ # Archivos de Office locales (doc, ppt, etc.)   
+    elif archivo.extension in EXTENSIONES_EMBED and archivo.archivo:
+        enlace_modificado = f"https://view.officeapps.live.com/op/embed.aspx?src=http://127.0.0.1:8000{archivo.archivo.url}"
 
-        if "drive.google.com" in archivo.enlace_externo:
-            # Usamos el enlace sin modificar para mostrar en otra pestaña
-            enlace_modificado = archivo.enlace_externo.replace("view?usp=sharing", "preview")
-        elif archivo.enlace_externo.endswith(('.doc', '.docx', '.ppt', '.pptx')):
-            import urllib.parse
-            # Usamos visor de Microsoft
-            enlace_modificado = (
-                "https://view.officeapps.live.com/op/view.aspx?src=" +
-                urllib.parse.quote(archivo.enlace_externo, safe='')
-            )
-        else:
-            enlace_modificado = archivo.enlace_externo
-
-    elif archivo.archivo:
-        if archivo.extension in ['doc', 'docx', 'ppt', 'pptx']:
-           import urllib.parse
-           full_url = request.build_absolute_uri(archivo.archivo.url)
-        
-           enlace_modificado = (
-                "https://view.officeapps.live.com/op/view.aspx?src=" +
-                urllib.parse.quote(full_url, safe='')
-            )
+# Enlace externo de Google Drive
+    elif archivo.enlace_externo and "drive.google.com" in archivo.enlace_externo:
+        enlace_modificado = archivo.enlace_externo.replace("view?usp=sharing", "preview")
 
     return render(request, 'gestion/archivo_ver.html', {
         'archivo': archivo,
         'enlace_modificado': enlace_modificado,
+        'extensiones_embed': EXTENSIONES_EMBED,
         'texto_contenido': texto_contenido
     })
+def convertir_ppsx_a_pptx(ruta_ppsx):
+    ppt_app = client.Dispatch("PowerPoint.Application")
+    ppt_app.Visible = 1
+    presentation = ppt_app.Presentations.Open(ruta_ppsx, WithWindow=False)
+    
+    ruta_salida = ruta_ppsx.replace(".ppsx", ".pptx")
+    presentation.SaveAs(ruta_salida, 24)  # 24 = formato .pptx
+    presentation.Close()
+    ppt_app.Quit()
+    return ruta_salida
 
-@user_passes_test(lambda u: u.is_staff)
+@solo_padres_y_admins
 def archivo_create(request):
     if request.method == 'POST':
         form = ArchivoForm(request.POST, request.FILES)
-        if form.is_valid():
-            nueva_asignatura = form.cleaned_data.get('nueva_asignatura')
+        if form.is_valid(): 
             archivo = form.save(commit=False)
-            if nueva_asignatura:
-                asignatura_obj, _ = Asignatura.objects.get_or_create(nombre=nueva_asignatura)
-                archivo.asignatura = asignatura_obj
-            archivo.subido_por = request.user
+            
+            if archivo.archivo and archivo.archivo.name.endswith('.ppsx'):
+                original = archivo.archivo
+                
+                # Ruta base del proyecto (donde está manage.py)
+                BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+                temp_dir = os.path.join(BASE_DIR, 'temp_uploads')
+
+                # Crear carpeta si no existe
+                if not os.path.exists(temp_dir):
+                    os.makedirs(temp_dir)
+
+                # Construir ruta temporal para guardar archivo subido
+                temp_path = os.path.join(temp_dir, original.name)
+
+                # Guardar el archivo temporalmente
+                with open(temp_path, 'wb+') as temp_file:
+                    for chunk in original.chunks():
+                        temp_file.write(chunk)
+
+                # Convertir .ppsx a .pptx con PowerPoint
+                from win32com import client
+                ppt_app = client.Dispatch("PowerPoint.Application")
+                ppt_app.Visible = 1
+                presentation = ppt_app.Presentations.Open(temp_path, WithWindow=False)
+                ruta_convertido = temp_path.replace(".ppsx", ".pptx")
+                presentation.SaveAs(ruta_convertido, 24)
+                presentation.Close()
+                ppt_app.Quit()
+
+                from django.core.files import File
+                with open(ruta_convertido, 'rb') as f:
+                    archivo.archivo.save(original.name.replace('.ppsx', '.pptx'), File(f), save=False)
+
+                # Eliminar archivos temporales
+                os.remove(temp_path)
+                os.remove(ruta_convertido)
+
+            # Guardar el objeto final
             archivo.save()
-            messages.success(request, "Archivo subido con éxito.")
-            return redirect(f"{reverse('archivo_create')}?success=create")
+            return redirect('archivo_list')
+        
+        else:
+            return render(request, 'gestion/archivo_form.html', {'form': form})
     else:
         form = ArchivoForm()
-    return render(request, 'gestion/archivo_form.html', {'form': form})
+        return render(request, 'gestion/archivo_form.html', {'form': form})
 
-@user_passes_test(es_admin)
+@solo_padres_y_admins
 def archivo_editar(request, pk):
     archivo = get_object_or_404(Archivo, pk=pk)
     if request.method == 'POST':
@@ -178,7 +212,7 @@ def archivo_editar(request, pk):
         form = ArchivoForm(instance=archivo)
     return render(request, 'gestion/archivo_editar.html', {'form': form})
 
-@user_passes_test(lambda u: u.is_staff)
+@solo_padres_y_admins
 def archivo_delete(request, pk):
     archivo = get_object_or_404(Archivo, pk=pk)
     if request.method == "POST":
@@ -189,12 +223,12 @@ def archivo_delete(request, pk):
 
 
 
-@user_passes_test(lambda u: u.is_staff)
+@solo_padres_y_admins
 def asignatura_list(request):
     asignaturas = Asignatura.objects.all()
     return render(request, 'gestion/asignatura_list.html', {'asignaturas': asignaturas})
 
-@user_passes_test(lambda u: u.is_staff)
+@solo_padres_y_admins
 def asignatura_create(request):
         if request.method == 'POST':
          form = AsignaturaForm(request.POST)
@@ -208,7 +242,7 @@ def asignatura_create(request):
            form = AsignaturaForm()
         return render(request, "gestion/asignatura_crear.html", {"form": form})
 
-@user_passes_test(lambda u: u.is_staff)
+@solo_padres_y_admins
 def asignatura_edit(request, pk):
     asignatura = get_object_or_404(Asignatura, pk=pk)
     if request.method == "POST":
@@ -229,7 +263,7 @@ def asignatura_edit(request, pk):
         "asignatura": asignatura,
     })
 
-@user_passes_test(lambda u: u.is_staff)
+@solo_padres_y_admins
 def asignatura_delete(request, pk):
     asignatura = get_object_or_404(Asignatura, pk=pk)
     if request.method == 'POST':
@@ -240,7 +274,7 @@ def asignatura_delete(request, pk):
 User = get_user_model()
 
 # Vistas para CRUD de Alumnos
-@user_passes_test(lambda u: u.is_staff)
+@solo_padres_y_admins
 def alumno_create(request):
     if request.method == 'POST':
         form = AlumnoForm(request.POST)
@@ -269,7 +303,7 @@ def alumno_create(request):
         form = AlumnoForm()
     return render(request, 'gestion/alumno_form.html', {'form': form})
 
-@user_passes_test(lambda u: u.is_staff)
+@solo_padres_y_admins
 def alumno_list(request):
     curso_filtro = request.GET.get('curso')
     buscar = request.GET.get('buscar', '')
@@ -289,7 +323,7 @@ def alumno_list(request):
         'buscar': buscar,
     })
 
-@user_passes_test(lambda u: u.is_staff)
+@solo_padres_y_admins
 def alumno_edit(request, pk):
     alumno = get_object_or_404(Alumno, pk=pk)
     if request.method == 'POST':
@@ -302,7 +336,7 @@ def alumno_edit(request, pk):
         form = AlumnoForm(instance=alumno)
     return render(request, 'gestion/alumno_form.html', {'form': form})
 
-@user_passes_test(lambda u: u.is_staff)
+@solo_padres_y_admins
 def alumno_delete(request, pk):
     alumno = get_object_or_404(Alumno, pk=pk)
     if request.method == 'POST':
@@ -312,7 +346,7 @@ def alumno_delete(request, pk):
     return render(request, 'gestion/alumno_confirm_delete.html', {'alumno': alumno})
 
 @login_required
-@user_passes_test(lambda u: u.is_staff)
+@solo_padres_y_admins
 def panel_admin_alumnos(request):
     alumnos = Alumno.objects.select_related('usuario').all()
 

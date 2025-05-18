@@ -47,7 +47,7 @@
                 <li><a href="{% url 'inicio' %}">🏠 Inicio</a></li>
                 
                 {% if user.is_authenticated %}
-                    {% if user.is_staff %}
+                    {% if user.tipo == 'padre' or user.is_superuser %}
                         <li><a href="{% url 'archivo_list' %}">📄  Archivos</a></li>
                         <li><a href="{% url 'asignatura_list' %}">📚 Asignaturas</a></li>
                         <li><a href="{% url 'archivo_create' %}">📥 Subir archivo</a></li>

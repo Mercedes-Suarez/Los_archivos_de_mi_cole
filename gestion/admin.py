@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Archivo, Asignatura, Alumno
+from .models import Archivo, Asignatura, Alumno, Usuario
 
 @admin.register(Archivo)
 class ArchivoAdmin(admin.ModelAdmin):
@@ -18,4 +18,8 @@ class AlumnoAdmin(admin.ModelAdmin):
     list_filter = ('curso',)
     search_fields = ('nombre',)
     ordering = ('curso', 'nombre')
+
+@admin.register(Usuario)
+class UsuarioAdmin(admin.ModelAdmin):
+    list_display = ['username', 'email', 'is_staff']
 

@@ -13,11 +13,18 @@ TRIMESTRES = [
     (1, '1º Trimestre'), (2, '2º Trimestre'),
     (3, '3º Trimestre'), (4, 'Vacaciones'),]
 
+TIPO_CHOICES = [
+    ('admin', 'Administrador General'),
+    ('padre', 'Padre'),
+    ('alumno', 'Alumno'),]
+
 class Usuario(AbstractUser):
-    pass
+
+    tipo = models.CharField(max_length=10, choices=TIPO_CHOICES, default='padre')
 
 class Alumno(models.Model):
     usuario = models.OneToOneField('gestion.Usuario', on_delete=models.CASCADE, null=True, blank=True)
+    padre = models.ForeignKey('gestion.Usuario', on_delete=models.SET_NULL, null=True, blank=True, related_name='hijos')
     nombre = models.CharField(max_length=100)
     curso = models.CharField(max_length=2, choices=CURSOS)
 
