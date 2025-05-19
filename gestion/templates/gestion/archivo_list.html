@@ -9,7 +9,11 @@
     <a href="{% url 'archivo_create' %}">📥 Subir nuevo archivo</a>
 {% endif %}
 <p>Sesión iniciada como: {{ user.username }}</p>
-<a href="{% url 'logout' %}">🔓 Cerrar sesión</a>
+<form method="post" action="{% url 'logout' %}" style="display:inline;">
+    {% csrf_token %}
+    <button type="submit" style="background:none;border:none;color:blue;cursor:pointer;padding:0;">🔐 Cerrar sesión</button>
+</form>
+
 <form method="get">
     <div>
     <label>Asignatura:</label>

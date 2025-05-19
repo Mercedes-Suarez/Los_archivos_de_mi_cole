@@ -1,7 +1,25 @@
 # gestion/forms.py
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
-from .models import Archivo, Asignatura, Usuario, Alumno
+from django.contrib.auth.forms import UserCreationForm, get_user_model
+from gestion.models import Usuario
+from .models import Archivo, Asignatura, Alumno
+
+class PadreForm(forms.ModelForm):
+    password = forms.CharField(widget=forms.PasswordInput, required=False)
+
+    class Meta:
+        model = Usuario
+        fields = ['username', 'email', 'password']
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        if self.cleaned_data['password']:
+            user.set_password(self.cleaned_data['password'])
+        user.tipo = 'padre'
+        user.is_staff = False
+        if commit:
+            user.save()
+        return user
 
 class AlumnoForm(forms.ModelForm):
     class Meta:

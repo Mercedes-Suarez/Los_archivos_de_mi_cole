@@ -1,9 +1,10 @@
 import os
+from django import forms
 from django.core.files import File
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.shortcuts import render, redirect, get_object_or_404
-from gestion.decorators import solo_padres_y_admins
+from gestion.decorators import solo_padres_y_admins, solo_admins
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout, get_user_model
 from django.contrib.auth.models import Group
@@ -14,7 +15,7 @@ from win32com import client
 
 
 from .models import Archivo,Alumno, Asignatura, CURSOS, TRIMESTRES
-from .forms import ArchivoForm, AsignaturaForm, RegistroForm, AlumnoForm, Archivo
+from .forms import ArchivoForm, AsignaturaForm, RegistroForm, AlumnoForm, PadreForm, Archivo
 
 import os
 
@@ -32,7 +33,7 @@ def registro_usuario(request):
 
 # Solo permite acceso si el usuario es staff (admin)
 def es_admin(user):
-    return user.is_staff
+    return user.is_authenticated and user.tipo == 'admin'
 
 def logout_with_message(request):
     logout(request)
@@ -41,6 +42,52 @@ def logout_with_message(request):
 
 def inicio(request):
     return render(request, 'gestion/inicio.html')
+
+def registro_padre(request):
+    if request.method == 'POST':
+        form = PadreForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('login')
+    else:
+        form = PadreForm()
+    return render(request, 'gestion/registro.html', {'form': form})
+    
+# Listar padre
+@solo_admins    
+def padre_list(request):
+    padres = Usuario.objects.filter(tipo='padre')
+    return render(request, 'gestion/padre_list.html', {'padres': padres})
+
+#  Crear padre
+@solo_admins
+def padre_create(request):
+    if request.method == 'POST':
+        form = PadreForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('padre_list')
+    else:
+        form = PadreForm()
+    return render(request, 'gestion/padre_form.html', {'form': form})
+
+#  Editar padre
+def padre_update(request, pk):
+    padre = get_object_or_404(Usuario, pk=pk, tipo='padre')
+    form = PadreForm(request.POST or None, instance=padre)
+    if form.is_valid():
+        form.save()
+        return redirect('padre_list')
+    return render(request, 'gestion/padre_form.html', {'form': form})
+
+#  Eliminar padre
+@solo_admins
+def padre_delete(request, pk):
+    padre = get_object_or_404(Usuario, pk=pk, tipo='padre')
+    if request.method == 'POST':
+        padre.delete()
+        return redirect('padre_list')
+    return render(request, 'gestion/padre_confirm_delete.html', {'padre': padre})
 
 @login_required
 @solo_padres_y_admins
@@ -77,6 +124,8 @@ TRIMESTRES = [
     (3, '3º Trimestre'), (4, 'Vacaciones'),
 ]
 
+@login_required
+@solo_padres_y_admins
 def archivo_list(request):
 
     archivos = Archivo.objects.all()
@@ -146,6 +195,7 @@ def convertir_ppsx_a_pptx(ruta_ppsx):
     ppt_app.Quit()
     return ruta_salida
 
+@login_required
 @solo_padres_y_admins
 def archivo_create(request):
     if request.method == 'POST':
@@ -200,6 +250,7 @@ def archivo_create(request):
         form = ArchivoForm()
         return render(request, 'gestion/archivo_form.html', {'form': form})
 
+@login_required
 @solo_padres_y_admins
 def archivo_editar(request, pk):
     archivo = get_object_or_404(Archivo, pk=pk)
@@ -212,7 +263,8 @@ def archivo_editar(request, pk):
         form = ArchivoForm(instance=archivo)
     return render(request, 'gestion/archivo_editar.html', {'form': form})
 
-@solo_padres_y_admins
+@login_required
+@solo_admins
 def archivo_delete(request, pk):
     archivo = get_object_or_404(Archivo, pk=pk)
     if request.method == "POST":
@@ -222,12 +274,13 @@ def archivo_delete(request, pk):
     return render(request, 'gestion/archivo_confirm_delete.html', {'archivo': archivo})
 
 
-
+@login_required
 @solo_padres_y_admins
 def asignatura_list(request):
     asignaturas = Asignatura.objects.all()
     return render(request, 'gestion/asignatura_list.html', {'asignaturas': asignaturas})
 
+@login_required
 @solo_padres_y_admins
 def asignatura_create(request):
         if request.method == 'POST':
@@ -242,6 +295,7 @@ def asignatura_create(request):
            form = AsignaturaForm()
         return render(request, "gestion/asignatura_crear.html", {"form": form})
 
+@login_required
 @solo_padres_y_admins
 def asignatura_edit(request, pk):
     asignatura = get_object_or_404(Asignatura, pk=pk)
@@ -263,6 +317,7 @@ def asignatura_edit(request, pk):
         "asignatura": asignatura,
     })
 
+@login_required
 @solo_padres_y_admins
 def asignatura_delete(request, pk):
     asignatura = get_object_or_404(Asignatura, pk=pk)
@@ -274,6 +329,7 @@ def asignatura_delete(request, pk):
 User = get_user_model()
 
 # Vistas para CRUD de Alumnos
+@login_required
 @solo_padres_y_admins
 def alumno_create(request):
     if request.method == 'POST':
@@ -303,6 +359,7 @@ def alumno_create(request):
         form = AlumnoForm()
     return render(request, 'gestion/alumno_form.html', {'form': form})
 
+@login_required
 @solo_padres_y_admins
 def alumno_list(request):
     curso_filtro = request.GET.get('curso')
@@ -323,6 +380,7 @@ def alumno_list(request):
         'buscar': buscar,
     })
 
+@login_required
 @solo_padres_y_admins
 def alumno_edit(request, pk):
     alumno = get_object_or_404(Alumno, pk=pk)
@@ -336,7 +394,8 @@ def alumno_edit(request, pk):
         form = AlumnoForm(instance=alumno)
     return render(request, 'gestion/alumno_form.html', {'form': form})
 
-@solo_padres_y_admins
+@login_required
+@solo_admins
 def alumno_delete(request, pk):
     alumno = get_object_or_404(Alumno, pk=pk)
     if request.method == 'POST':
@@ -346,7 +405,15 @@ def alumno_delete(request, pk):
     return render(request, 'gestion/alumno_confirm_delete.html', {'alumno': alumno})
 
 @login_required
-@solo_padres_y_admins
+@solo_admins
+def panel_admin_padres(request):
+    padres = Usuario.objects.filter(tipo='padre').prefetch_related('hijos')
+    return render(request, 'gestion/panel_admin_padres.html', {
+        'padres': padres
+    })
+
+@login_required
+@solo_admins
 def panel_admin_alumnos(request):
     alumnos = Alumno.objects.select_related('usuario').all()
 

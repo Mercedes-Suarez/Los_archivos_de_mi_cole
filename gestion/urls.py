@@ -35,5 +35,12 @@ urlpatterns = [
 
     path('panel/alumnos/', views.panel_admin_alumnos, name='panel_admin_alumnos'),
 
+    # Gestion de padres
+
+    path('padres/', views.padre_list, name='padre_list'),
+    path('padres/crear/', views.padre_create, name='padre_create'),
+    path('padres/<int:pk>/editar/', views.padre_update, name='padre_edit'),
+    path('padres/<int:pk>/eliminar/', views.padre_delete, name='padre_delete'),
+
 ]
 

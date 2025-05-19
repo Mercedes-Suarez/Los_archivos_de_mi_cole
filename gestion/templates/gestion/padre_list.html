@@ -1,0 +1,11 @@
+<h2>Listado de Padres</h2>
+<a href="{% url 'padre_create' %}">Crear nuevo padre</a>
+<ul>
+  {% for padre in padres %}
+    <li>
+      {{ padre.username }} - {{ padre.email }}
+      <a href="{% url 'padre_edit' padre.id %}">Editar</a>
+      <a href="{% url 'padre_delete' padre.id %}">Eliminar</a>
+    </li>
+  {% endfor %}
+</ul>

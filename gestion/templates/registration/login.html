@@ -9,15 +9,15 @@
     {% csrf_token %}    
 
      <p>
-       <label for="{{ form.username.id_for_label }}">Usuario:</label>
-       <input type="text" name="username" id="{{ form.username.id_for_label }}" required 
-           autocomplete="off" maxlength="150" autocapitalize="none">
+       <label for="id_username">Usuario:</label>
+       <input type="text" name="username" id="id_username" required 
+           autocomplete="new-password" maxlength="150" autocapitalize="none">
        </p>
 
      <p>
-        <label for="{{ form.password.id_for_label }}">Contraseña:</label>
-        <input type="password" name="password" id="{{ form.password.id_for_label }}" required 
-           autocomplete="off">
+        <label for="id_password">Contraseña:</label>
+        <input type="password" name="password" id="id_password" required 
+           autocomplete="new-password" value="">
      </p>
 
      <button type="submit">🔐 Iniciar sesión</button>

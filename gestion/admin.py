@@ -1,6 +1,6 @@
 from django.contrib import admin
-
-from .models import Archivo, Asignatura, Alumno, Usuario
+from django.contrib.auth.admin import UserAdmin
+from .models import Archivo, Asignatura, Padre, Alumno, Usuario
 
 @admin.register(Archivo)
 class ArchivoAdmin(admin.ModelAdmin):
@@ -12,6 +12,18 @@ class ArchivoAdmin(admin.ModelAdmin):
 class AsignaturaAdmin(admin.ModelAdmin):
     list_display = ('nombre',)
 
+@admin.register(Padre)
+class PadreAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'get_email', 'get_fecha_creacion')
+
+    def get_email(self, obj):
+        return obj.usuario.email
+    get_email.short_description = 'Email'
+
+    def get_fecha_creacion(self, obj):
+        return obj.usuario.fecha_creacion
+    get_fecha_creacion.short_description = 'Fecha de creación'
+
 @admin.register(Alumno)
 class AlumnoAdmin(admin.ModelAdmin):
     list_display = ('nombre', 'curso')
@@ -20,6 +32,24 @@ class AlumnoAdmin(admin.ModelAdmin):
     ordering = ('curso', 'nombre')
 
 @admin.register(Usuario)
-class UsuarioAdmin(admin.ModelAdmin):
-    list_display = ['username', 'email', 'is_staff']
+class UsuarioAdmin(UserAdmin):
+    fieldsets = (
+        (None, {'fields': ('username', 'password')}),
+        ('Información personal', {'fields': ('email',)}),
+        ('Permisos', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
+        ('Tipo de usuario', {'fields': ('tipo',)}),
+        ('Fechas importantes', {'fields': ('last_login', 'date_joined')}),
+    )
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('username', 'email', 'password1', 'password2', 'tipo'),
+        }),
+    )
+    list_display = ('username', 'email', 'tipo', 'is_staff')
+    search_fields = ('username', 'email')
+    ordering = ('username',)
+
+
+
 

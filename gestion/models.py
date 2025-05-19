@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.conf import settings
+from django.utils import timezone
 
 CURSOS = [
         ('1P', '1º Primaria'), ('2P', '2º Primaria'), ('3P', '3º Primaria'),
@@ -13,14 +14,25 @@ TRIMESTRES = [
     (1, '1º Trimestre'), (2, '2º Trimestre'),
     (3, '3º Trimestre'), (4, 'Vacaciones'),]
 
-TIPO_CHOICES = [
-    ('admin', 'Administrador General'),
-    ('padre', 'Padre'),
-    ('alumno', 'Alumno'),]
+
 
 class Usuario(AbstractUser):
+    TIPO_CHOICES = [
+      ('admin', 'Administrador General'),
+      ('padre', 'Padre'),
+      ('alumno', 'Alumno'),
+      ]
 
     tipo = models.CharField(max_length=10, choices=TIPO_CHOICES, default='padre')
+    fecha_creacion = models.DateTimeField(default=timezone.now)
+
+# Padre vinculado al usuario
+class Padre(models.Model):
+    usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE, related_name='padre')
+    nombre = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.nombre
 
 class Alumno(models.Model):
     usuario = models.OneToOneField('gestion.Usuario', on_delete=models.CASCADE, null=True, blank=True)
