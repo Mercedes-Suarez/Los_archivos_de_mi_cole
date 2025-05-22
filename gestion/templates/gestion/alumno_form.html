@@ -1,7 +1,6 @@
 {% extends 'gestion/base.html' %}
 {% block title %}Formulario Alumnos{% endblock %}
 
-<div id="main-content">
 {% block content %}
 
 <h2>{{ form.instance.pk|yesno:"Editar Alumno,Crear Alumno" }}</h2>
@@ -9,9 +8,8 @@
 <form method="post">
 
     {% csrf_token %}
-    {% include "gestion/alumno_form_fields.html" %}
+    {{ form.as_p }}
     <button class="btn btn-guardar" type="submit">💾 Guardar</button>
     <a class="btn btn-cancelar" href="{% url 'alumno_list' %}">❌ Cancelar</a>
 </form>
 {% endblock %}
-</div>

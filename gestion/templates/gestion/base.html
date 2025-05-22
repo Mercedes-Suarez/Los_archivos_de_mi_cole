@@ -28,6 +28,7 @@
                         <li><a href="{% url 'archivo_list' %}">📄  Archivos</a></li>
                         <li><a href="{% url 'asignatura_list' %}">📚 Asignaturas</a></li>
                         <li><a href="{% url 'archivo_create' %}">📥 Subir archivo</a></li>
+                        <li><a href="{% url 'padre_list' %}">👥 Mis Padres</a></li> 
                         <li><a href="{% url 'alumno_list' %}">👨‍🎓 Mis Alumnos</a></li>
                     {% endif %}
                     <li>
@@ -51,6 +52,7 @@
                         <li><a href="{% url 'archivo_list' %}">📄  Archivos</a></li>
                         <li><a href="{% url 'asignatura_list' %}">📚 Asignaturas</a></li>
                         <li><a href="{% url 'archivo_create' %}">📥 Subir archivo</a></li>
+                        <li><a href="{% url 'padre_list' %}">👥 Mis Padres</a></li>
                         <li><a href="{% url 'alumno_list' %}">👨‍🎓 Mis Alumnos</a></li>
                     {% endif %}
                     <li>
@@ -114,10 +116,12 @@
             }, 4000);
     </script>
 
-</body>
-<footer>
-    <hr>
+    <footer>
+     <hr>
       <p style="text-align:center;">&copy; {{ now|date:"Y" }} Mi Cole - By Mercedes Suárez</p>
-</footer>
+    </footer>
+
+</body>
+
 </html>
 

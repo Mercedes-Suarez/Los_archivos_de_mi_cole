@@ -6,21 +6,33 @@
 <h2>Iniciar sesión</h2>
 
 <form method="post">
-    {% csrf_token %}    
+    {% csrf_token %}
 
-     <p>
+    {% if form.non_field_errors %}
+        <ul class="errorlist">
+            {% for error in form.non_field_errors %}
+                <li style="color:red;">{{ error }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <p>
        <label for="id_username">Usuario:</label>
-       <input type="text" name="username" id="id_username" required 
-           autocomplete="new-password" maxlength="150" autocapitalize="none">
-       </p>
+       {{ form.username }}
+       {% if form.username.errors %}
+           <span style="color:red;">{{ form.username.errors.0 }}</span>
+       {% endif %}
+    </p>
 
-     <p>
-        <label for="id_password">Contraseña:</label>
-        <input type="password" name="password" id="id_password" required 
-           autocomplete="new-password" value="">
-     </p>
+    <p>
+       <label for="id_password">Contraseña:</label>
+       {{ form.password }}
+       {% if form.password.errors %}
+           <span style="color:red;">{{ form.password.errors.0 }}</span>
+       {% endif %}
+    </p>
 
-     <button type="submit">🔐 Iniciar sesión</button>
+    <button type="submit">🔐 Iniciar sesión</button>
 </form>
 
 <p>¿No tienes cuenta? <a href="{% url 'registro' %}">🧾 Regístrate</a></p>

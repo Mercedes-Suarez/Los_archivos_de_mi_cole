@@ -25,6 +25,7 @@ class AlumnoForm(forms.ModelForm):
     class Meta:
         model = Alumno
         fields = ['nombre', 'curso']
+        exclude = ['padre', 'usuario']
         labels = {
             'nombre': 'Nombre del alumno',
             'curso': 'Curso',

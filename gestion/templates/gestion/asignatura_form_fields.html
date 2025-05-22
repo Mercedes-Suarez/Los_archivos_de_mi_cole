@@ -1,8 +1,5 @@
-{% extends 'gestion/base.html' %}
 {% block title %}Formulario Asignatura{% endblock %}
 
-<div id="main-content">
-{% block content %}
 {% for field in form %}
     <p>
         {{ field.label_tag }}
@@ -15,5 +12,4 @@
         {% endfor %}
     </p>
 {% endfor %}
-{% endblock %}
-</div>
+

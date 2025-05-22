@@ -1,9 +1,5 @@
-{% extends 'gestion/base.html' %}
 {% block title %}Formulario Archivo{% endblock %}
 
-<div id="main-content">
-
-{% block content %}
 <h2>Subir Archivo</h2>
 <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
@@ -90,6 +86,5 @@
         }
     });
 </script>
-{% endblock %}
-</div>
+
 

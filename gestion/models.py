@@ -17,13 +17,8 @@ TRIMESTRES = [
 
 
 class Usuario(AbstractUser):
-    TIPO_CHOICES = [
-      ('admin', 'Administrador General'),
-      ('padre', 'Padre'),
-      ('alumno', 'Alumno'),
-      ]
 
-    tipo = models.CharField(max_length=10, choices=TIPO_CHOICES, default='padre')
+    tipo = models.CharField(max_length=10, choices=[('alumno', 'Alumno'), ('padre', 'Padre'), ('admin', 'Administrador')])
     fecha_creacion = models.DateTimeField(default=timezone.now)
 
 # Padre vinculado al usuario

@@ -9,15 +9,22 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout, get_user_model
 from django.contrib.auth.models import Group
 from django.contrib.auth.hashers import make_password
+from django.contrib.auth.views import LoginView
+from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
 from django.core.files.base import ContentFile
+from django.http import HttpResponseForbidden
 from win32com import client
 
 
-from .models import Archivo,Alumno, Asignatura, CURSOS, TRIMESTRES
+from .models import Archivo,Alumno, Asignatura, Padre, CURSOS, TRIMESTRES
 from .forms import ArchivoForm, AsignaturaForm, RegistroForm, AlumnoForm, PadreForm, Archivo
 
 import os
+
+class MiLoginView(LoginView):
+    template_name = 'registration/login.html'
+    authentication_form = AuthenticationForm
 
 Usuario = get_user_model()
 
@@ -65,11 +72,13 @@ def padre_create(request):
     if request.method == 'POST':
         form = PadreForm(request.POST)
         if form.is_valid():
-            form.save()
-            return redirect('padre_list')
+            usuario = form.save()
+            Padre.objects.create(usuario=usuario, nombre=usuario.username)
+            
+            return redirect('login')
     else:
         form = PadreForm()
-    return render(request, 'gestion/padre_form.html', {'form': form})
+    return render(request, 'gestion/registro.html', {'form': form})
 
 #  Editar padre
 def padre_update(request, pk):
@@ -89,8 +98,7 @@ def padre_delete(request, pk):
         return redirect('padre_list')
     return render(request, 'gestion/padre_confirm_delete.html', {'padre': padre})
 
-@login_required
-@solo_padres_y_admins
+
 def acceso_alumno(request):
         usuario = request.user
         try:
@@ -353,10 +361,18 @@ def alumno_create(request):
 
             # Enlazar con el alumno
             alumno.usuario = usuario
+
+            # ✅ Enlazar el alumno al padre (usuario actual)
+            if not request.user.is_staff:
+                alumno.padre = request.user
+          
             alumno.save()
-            return redirect('alumno_list')
+
+            return redirect('alumno_list')  # ← Este redirect es clave para evitar reenviar formulario
     else:
+
         form = AlumnoForm()
+
     return render(request, 'gestion/alumno_form.html', {'form': form})
 
 @login_required
@@ -364,15 +380,18 @@ def alumno_create(request):
 def alumno_list(request):
     curso_filtro = request.GET.get('curso')
     buscar = request.GET.get('buscar', '')
+    
+    if request.user.is_staff or request.user.is_superuser:
+        alumnos = Alumno.objects.all()
+    else:  # es padre
+        alumnos = Alumno.objects.filter(padre=request.user)
 
-    alumnos = Alumno.objects.all()
     if curso_filtro:
         alumnos = alumnos.filter(curso=curso_filtro)
     if buscar:
         alumnos = alumnos.filter(nombre__icontains=buscar)
 
     cursos = Alumno._meta.get_field('curso').choices
-
     return render(request, 'gestion/alumno_list.html', {
         'alumnos': alumnos,
         'cursos': cursos,
@@ -384,6 +403,10 @@ def alumno_list(request):
 @solo_padres_y_admins
 def alumno_edit(request, pk):
     alumno = get_object_or_404(Alumno, pk=pk)
+
+    if not request.user.is_staff and alumno.padre != request.user:
+        return HttpResponseForbidden("No tienes permiso para editar este alumno.")
+
     if request.method == 'POST':
         form = AlumnoForm(request.POST, instance=alumno)
         if form.is_valid():
@@ -395,9 +418,13 @@ def alumno_edit(request, pk):
     return render(request, 'gestion/alumno_form.html', {'form': form})
 
 @login_required
-@solo_admins
+@solo_padres_y_admins  # Antes: solo_admins
 def alumno_delete(request, pk):
     alumno = get_object_or_404(Alumno, pk=pk)
+
+    if not request.user.is_staff and alumno.padre != request.user:
+        return HttpResponseForbidden("No tienes permiso para eliminar este alumno.")
+
     if request.method == 'POST':
         alumno.delete()
         messages.success(request, "Alumno eliminado correctamente.")

@@ -10,7 +10,7 @@
 
 {% if user.is_authenticated %}
     <p>Hola, {{ user.username }}. </p>
-    <p>Aquí podras ver los <a href="{% url 'archivo_list' %}">archivos.</a></p>
+    <p>Aquí podras ver los <a href="{% url 'archivo_list' %}">archivos</a>y aqui tus <a href="{% url 'alumno_list' %}"> alumn@s</p>
     
 {% else %}
     <p><a href="{% url 'login' %}">🔓 Inicia sesión</a> para acceder a los archivos.</p>
