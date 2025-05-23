@@ -1,5 +1,6 @@
 {% extends 'gestion/base.html' %}
 {% block title %}Panel de Alumnos{% endblock %}
+
 <div id="main-content">
 {% block content %}
 <h2>📋 Panel de seguimiento por alumno</h2>
@@ -9,6 +10,15 @@
     {% for alumno in alumnos %}
         <li>
             <strong>{{ alumno.nombre }} ({{ alumno.get_curso_display }})</strong><br>
+
+            {% comment %} Verificar si hay solicitud de eliminación {% endcomment %}
+            {% if alumno.solicitudeliminacion_set.filter(procesado=False).exists %}
+                <p style="color: red;">🛑 Solicitud de eliminación pendiente</p>
+                <!-- Opcional: enlaces para aprobar/rechazar -->
+                <a href="{% url 'aprobar_eliminacion_alumno' alumno.id %}" onclick="return confirm('¿Seguro que quieres eliminar este alumno?')">✅ Aprobar</a> |
+                <a href="{% url 'rechazar_eliminacion_alumno' alumno.id %}">❌ Rechazar</a>
+            {% endif %}
+
             {% if alumno.usuario %}
                 Archivos subidos: 
                 <ul>

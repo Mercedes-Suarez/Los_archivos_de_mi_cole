@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import Archivo, Asignatura, Padre, Alumno, Usuario
+from .models import Archivo, Asignatura, Padre, Alumno, Usuario, SolicitudEliminacionBase
 
 @admin.register(Archivo)
 class ArchivoAdmin(admin.ModelAdmin):
@@ -50,6 +50,16 @@ class UsuarioAdmin(UserAdmin):
     search_fields = ('username', 'email')
     ordering = ('username',)
 
+@admin.register
+class SolicitudEliminacionBase(admin.ModelAdmin):
+    list_display = ('archivo', 'solicitante', 'fecha_solicitud', 'procesado')
+    list_filter = ('procesado', 'fecha_solicitud')
+    search_fields = ('archivo__nombre', 'solicitante__username')
+    actions = ['marcar_como_procesadas']
+
+    @admin.action(description='Marcar solicitudes seleccionadas como procesadas')
+    def marcar_como_procesadas(self, request, queryset):
+        queryset.update(procesado=True)
 
 
 

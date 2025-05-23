@@ -1,20 +1,10 @@
-{% extends 'gestion/base.html' %}
-{% block title %}Eliminar Archivo{% endblock %}
-
-<div id="main-content">
-
+{% extends "base.html" %}
 {% block content %}
-<h2>Confirmar eliminación</h2>
-    
-<p>¿Estás seguro de que quieres eliminar el archivo </strong>{{ object }}</strong></p>
-
-<form method="post">
+  <h2>¿Estás seguro de que deseas eliminar este archivo?</h2>
+  <p>{{ archivo.nombre_archivo }}</p>
+  <form method="post">
     {% csrf_token %}
-    <button class="btn btn-eliminar" type="submit" onclick="return confirm('¿Estás seguro de eliminar este archivo?')"> 🗑️ Si. Eliminar</button>
-
-</form>
-
-<a class="btn btn-cancelar" href="{% url 'archivo_list' %}">🔙 Cancelar</a>
-
+    <button type="submit" class="btn btn-danger">Eliminar</button>
+    <a href="{% url 'archivo_list' %}" class="btn btn-secondary">Cancelar</a>
+  </form>
 {% endblock %}
-</div>

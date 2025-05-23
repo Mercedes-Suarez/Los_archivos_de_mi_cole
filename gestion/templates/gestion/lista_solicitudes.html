@@ -1,0 +1,32 @@
+{% extends 'gestion/base.html' %}
+{% block title %}Solicitudes de Eliminación{% endblock %}
+
+{% block content %}
+<h2>Solicitudes de eliminación de alumnos</h2>
+<ul>
+    {% for s in solicitudes_alumnos %}
+        <li>{{ s.fecha_solicitud }} - {{ s.solicitante }} quiere eliminar al alumno {{ s.alumno }}</li>
+    {% empty %}
+        <li>No hay solicitudes de alumnos.</li>
+    {% endfor %}
+</ul>
+
+<h2>Solicitudes de eliminación de archivos</h2>
+<ul>
+    {% for s in solicitudes_archivos %}
+        <li>{{ s.fecha_solicitud }} - {{ s.solicitante }} quiere eliminar el archivo "{{ s.archivo.nombre_archivo }}"</li>
+    {% empty %}
+        <li>No hay solicitudes de archivos.</li>
+    {% endfor %}
+</ul>
+
+<h2>Solicitudes de eliminación de asignaturas</h2>
+<ul>
+    {% for s in solicitudes_asignaturas %}
+        <li>{{ s.fecha_solicitud }} - {{ s.solicitante }} quiere eliminar la asignatura "{{ s.asignatura }}"</li>
+    {% empty %}
+        <li>No hay solicitudes de asignaturas.</li>
+    {% endfor %}
+</ul>
+{% endblock %}
+

@@ -66,21 +66,21 @@
     </tr>
 </thead>
 </tbody>
-    {% for archivo in archivos %}
-      <tr>
-        <td>
-          <a href="{% url 'archivo_ver' archivo.id %}">{{ archivo.nombre_archivo }}</a>
-        </td>
-        <td>{{ archivo.asignatura }}</td>
-        <td>{{ archivo.get_curso_display }}</td>
-        <td>{{ archivo.fecha_subida|date:"d/m/Y H:i" }}</td>
-        <td>
-          <a href="{% url 'archivo_editar' archivo.id %}">Editar</a>
-          <a href="{% url 'archivo_delete' archivo.id %}">Eliminar</a>
-        </td>
-      </tr>
-    {% endfor %}
-    </tbody>
+
+  {% for archivo in archivos %}
+    <tr>
+      <td>  
+       {% if user.is_superuser %}
+            <a href="{% url 'editar_alumno' alumno.id %}">✏️ Editar</a> |
+            <a href="{% url 'eliminar_alumno' alumno.id %}" onclick="return confirm('¿Seguro que deseas eliminar este alumno?')">🗑️ Eliminar</a>
+        {% else %}
+            <a href="{% url 'editar_alumno' alumno.id %}">✏️ Editar</a> |
+            <a href="{% url 'solicitar_eliminacion_alumno' alumno.id %}">📩 Solicitar eliminación</a>
+        {% endif %}
+      </td>  
+    </tr>
+{% endfor %}
+
 </table>
 {% endblock %}
 </div>

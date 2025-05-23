@@ -12,9 +12,8 @@ CURSOS = [
 
 TRIMESTRES = [
     (1, '1º Trimestre'), (2, '2º Trimestre'),
-    (3, '3º Trimestre'), (4, 'Vacaciones'),]
-
-
+    (3, '3º Trimestre'), (4, 'Vacaciones'),
+]
 
 class Usuario(AbstractUser):
 
@@ -69,3 +68,21 @@ class Archivo(models.Model):
 
     def __str__(self):
         return f"{self.nombre_archivo} - {self.asignatura}"
+
+class SolicitudEliminacionBase(models.Model):
+    fecha_solicitud = models.DateTimeField(auto_now_add=True)
+    procesado = models.BooleanField(default=False)
+    solicitante = models.ForeignKey(Usuario, on_delete=models.CASCADE)
+    motivo = models.TextField(blank=True)  # Nuevo campo para explicar el motivo
+
+    class Meta:
+        abstract = True
+
+class SolicitudEliminacionAlumno(SolicitudEliminacionBase):
+    alumno = models.ForeignKey(Alumno, on_delete=models.CASCADE)
+
+class SolicitudEliminacionArchivo(SolicitudEliminacionBase):
+    archivo = models.ForeignKey(Archivo, on_delete=models.CASCADE)
+
+class SolicitudEliminacionAsignatura(SolicitudEliminacionBase):
+    asignatura = models.ForeignKey(Asignatura, on_delete=models.CASCADE)

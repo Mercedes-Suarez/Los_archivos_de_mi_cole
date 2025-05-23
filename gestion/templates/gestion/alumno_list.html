@@ -32,8 +32,13 @@
             <td>{{ alumno.nombre }}</td>
             <td>{{ alumno.get_curso_display }}</td>
             <td>
-                <a class="btn btn-editar" href="{% url 'alumno_edit' alumno.pk %}">✏️ Editar</a> |
-                <a class="btn btn-eliminar" href="{% url 'alumno_delete' alumno.pk %}">🗑️ Eliminar</a>
+                {% if user.is_superuser %}
+                   <a href="{% url 'alumno_edit' alumno.id %}">✏️ Editar</a> |
+                   <a href="{% url 'alumno_delete' alumno.id %}" onclick="return confirm('¿Seguro que deseas eliminar este alumno?')">🗑️ Eliminar</a>
+                {% else %}
+                   <a href="{% url 'alumno_edit' alumno.id %}">✏️ Editar</a> |
+                   <a href="{% url 'solicitar_eliminacion_alumno' alumno.id %}">📩 Solicitar eliminación</a>
+                {% endif %}
             </td>
         </tr>
     {% endfor %}

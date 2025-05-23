@@ -2,10 +2,16 @@
 <a href="{% url 'padre_create' %}">Crear nuevo padre</a>
 <ul>
   {% for padre in padres %}
-    <li>
-      {{ padre.username }} - {{ padre.email }}
-      <a href="{% url 'padre_edit' padre.id %}">Editar</a>
-      <a href="{% url 'padre_delete' padre.id %}">Eliminar</a>
-    </li>
+    
+      <td>
+         {{ padre.username }} - {{ padre.email }}
+          {% if user.is_superuser %}
+           <a href="{% url 'editar_alumno' alumno.id %}">✏️ Editar</a> |
+           <a href="{% url 'eliminar_alumno' alumno.id %}" onclick="return confirm('¿Seguro que deseas eliminar este alumno?')">🗑️ Eliminar</a>
+         {% else %}
+           <a href="{% url 'editar_alumno' alumno.id %}">✏️ Editar</a> |
+           <a href="{% url 'solicitar_eliminacion_alumno' alumno.id %}">📩 Solicitar eliminación</a>
+          {% endif %}
+      </td>
   {% endfor %}
 </ul>

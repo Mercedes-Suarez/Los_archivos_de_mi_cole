@@ -7,17 +7,24 @@ from django.shortcuts import render, redirect, get_object_or_404
 from gestion.decorators import solo_padres_y_admins, solo_admins
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout, get_user_model
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import User, Group
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.views import LoginView
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib import messages
 from django.core.files.base import ContentFile
+from django.core.mail import send_mail
 from django.http import HttpResponseForbidden
 from win32com import client
 
 
-from .models import Archivo,Alumno, Asignatura, Padre, CURSOS, TRIMESTRES
+from .models import (
+    Archivo, Alumno, Asignatura, Padre, 
+    SolicitudEliminacionArchivo, 
+    SolicitudEliminacionAlumno, 
+    SolicitudEliminacionAsignatura, 
+    CURSOS, TRIMESTRES
+)
 from .forms import ArchivoForm, AsignaturaForm, RegistroForm, AlumnoForm, PadreForm, Archivo
 
 import os
@@ -59,15 +66,18 @@ def registro_padre(request):
     else:
         form = PadreForm()
     return render(request, 'gestion/registro.html', {'form': form})
-    
+
+
 # Listar padre
-@solo_admins    
+@solo_admins  
+
 def padre_list(request):
     padres = Usuario.objects.filter(tipo='padre')
     return render(request, 'gestion/padre_list.html', {'padres': padres})
 
 #  Crear padre
 @solo_admins
+
 def padre_create(request):
     if request.method == 'POST':
         form = PadreForm(request.POST)
@@ -97,6 +107,9 @@ def padre_delete(request, pk):
         padre.delete()
         return redirect('padre_list')
     return render(request, 'gestion/padre_confirm_delete.html', {'padre': padre})
+
+
+
 
 
 def acceso_alumno(request):
@@ -134,6 +147,7 @@ TRIMESTRES = [
 
 @login_required
 @solo_padres_y_admins
+
 def archivo_list(request):
 
     archivos = Archivo.objects.all()
@@ -165,6 +179,7 @@ def archivo_list(request):
 
 EXTENSIONES_EMBED = ["pptx", "docx"]
 
+
 def archivo_ver(request, id):
     archivo = get_object_or_404(Archivo, id=id)
 
@@ -192,6 +207,7 @@ def archivo_ver(request, id):
         'extensiones_embed': EXTENSIONES_EMBED,
         'texto_contenido': texto_contenido
     })
+
 def convertir_ppsx_a_pptx(ruta_ppsx):
     ppt_app = client.Dispatch("PowerPoint.Application")
     ppt_app.Visible = 1
@@ -205,6 +221,7 @@ def convertir_ppsx_a_pptx(ruta_ppsx):
 
 @login_required
 @solo_padres_y_admins
+
 def archivo_create(request):
     if request.method == 'POST':
         form = ArchivoForm(request.POST, request.FILES)
@@ -260,6 +277,7 @@ def archivo_create(request):
 
 @login_required
 @solo_padres_y_admins
+
 def archivo_editar(request, pk):
     archivo = get_object_or_404(Archivo, pk=pk)
     if request.method == 'POST':
@@ -271,25 +289,114 @@ def archivo_editar(request, pk):
         form = ArchivoForm(instance=archivo)
     return render(request, 'gestion/archivo_editar.html', {'form': form})
 
+def solicitar_eliminacion_archivo(request, archivo_id):
+    archivo = get_object_or_404(Archivo, id=archivo_id)
+
+    ya_solicitada = SolicitudEliminacionArchivo.objects.filter(
+        archivo=archivo,
+        solicitante=request.user,
+        procesado=False
+    ).exists()
+
+    if ya_solicitada:
+        messages.warning(request, "Ya has solicitado la eliminación de este archivo.")
+    else:
+        SolicitudEliminacionArchivo.objects.create(
+            archivo=archivo,
+            solicitante=request.user,
+        )
+
+        # Enviar correo al superusuario
+        admin_user = User.objects.filter(is_superuser=True).first()
+        if admin_user and admin_user.email:
+            send_mail(
+                subject='Solicitud de eliminación de archivo',
+                message=f'El usuario {request.user.username} ha solicitado eliminar el archivo "{archivo.nombre_archivo}".',
+                from_email='noreply@micolegio.com',
+                recipient_list=[admin_user.email],
+                fail_silently=True,
+            )
+
+        messages.info(request, "Solicitud enviada al administrador.")
+
+    return redirect('lista_archivos')
+
 @login_required
-@solo_admins
+@solo_padres_y_admins
+
+def solicitar_eliminacion_archivo(request, pk):
+    archivo = get_object_or_404(Archivo, pk=pk)
+
+    if not request.user.is_staff and archivo.subido_por != request.user:
+        return HttpResponseForbidden("No tienes permiso para solicitar la eliminación de este archivo.")
+
+    ya_solicitada = SolicitudEliminacionArchivo.objects.filter(
+        archivo=archivo,
+        solicitante=request.user,
+        procesado=False
+    ).exists()
+
+    if ya_solicitada:
+        messages.warning(request, "Ya has solicitado la eliminación de este archivo.")
+    else:
+        SolicitudEliminacionArchivo.objects.create(
+            archivo=archivo,
+            solicitante=request.user,
+        )
+
+        admin_user = User.objects.filter(is_superuser=True).first()
+        if admin_user and admin_user.email:
+            send_mail(
+                subject='Solicitud de eliminación de archivo',
+                message=f'El usuario {request.user.username} ha solicitado eliminar el archivo "{archivo.nombre_archivo}".',
+                from_email='noreply@micolegio.com',
+                recipient_list=[admin_user.email],
+                fail_silently=True,
+            )
+
+        messages.info(request, "Solicitud enviada al administrador.")
+
+    return redirect('archivo_list')  # Asegúrate de tener esta vista/URL
+
+@login_required
+@solo_padres_y_admins
+
+def aprobar_eliminacion_archivo(request, pk):
+    archivo = get_object_or_404(Archivo, pk=pk)
+    SolicitudEliminacionArchivo.objects.filter(archivo=archivo, procesado=False).update(procesado=True)
+    archivo.delete()
+    messages.success(request, "Archivo eliminado y solicitud procesada.")
+    return redirect('panel_admin_archivos')  # Define esta URL
+
+@login_required
+@solo_padres_y_admins
+
+def rechazar_eliminacion_archivo(request, pk):
+    archivo = get_object_or_404(Archivo, pk=pk)
+    SolicitudEliminacionArchivo.objects.filter(archivo=archivo, procesado=False).update(procesado=True)
+    messages.info(request, "Solicitud de eliminación rechazada.")
+    return redirect('panel_admin_archivos')
+
+@login_required
+@solo_padres_y_admins
 def archivo_delete(request, pk):
     archivo = get_object_or_404(Archivo, pk=pk)
-    if request.method == "POST":
+
+    if not request.user.is_staff and archivo.subido_por != request.user:
+        return HttpResponseForbidden("No tienes permiso para eliminar este archivo.")
+
+    if request.method == 'POST':
         archivo.delete()
-        messages.success(request, "Archivo eliminado con éxito.")
+        messages.success(request, "Archivo eliminado correctamente.")
         return redirect('archivo_list')
+    
     return render(request, 'gestion/archivo_confirm_delete.html', {'archivo': archivo})
 
 
-@login_required
-@solo_padres_y_admins
-def asignatura_list(request):
-    asignaturas = Asignatura.objects.all()
-    return render(request, 'gestion/asignatura_list.html', {'asignaturas': asignaturas})
 
 @login_required
 @solo_padres_y_admins
+
 def asignatura_create(request):
         if request.method == 'POST':
          form = AsignaturaForm(request.POST)
@@ -305,6 +412,7 @@ def asignatura_create(request):
 
 @login_required
 @solo_padres_y_admins
+
 def asignatura_edit(request, pk):
     asignatura = get_object_or_404(Asignatura, pk=pk)
     if request.method == "POST":
@@ -325,20 +433,89 @@ def asignatura_edit(request, pk):
         "asignatura": asignatura,
     })
 
+
 @login_required
 @solo_padres_y_admins
+
+def asignatura_list(request):
+    asignaturas = Asignatura.objects.all()
+    return render(request, 'gestion/asignatura_list.html', {'asignaturas': asignaturas})
+
+
+@login_required
+@solo_padres_y_admins
+
+def solicitar_eliminacion_asignatura(request, pk):
+    asignatura = get_object_or_404(Asignatura, pk=pk)
+
+    ya_solicitada = SolicitudEliminacionAsignatura.objects.filter(
+        asignatura=asignatura,
+        solicitante=request.user,
+        procesado=False
+    ).exists()
+
+    if ya_solicitada:
+        messages.warning(request, "Ya has solicitado la eliminación de esta asignatura.")
+    else:
+        SolicitudEliminacionAsignatura.objects.create(
+            asignatura=asignatura,
+            solicitante=request.user,
+        )
+
+        admin_user = User.objects.filter(is_superuser=True).first()
+        if admin_user and admin_user.email:
+            send_mail(
+                subject='Solicitud de eliminación de asignatura',
+                message=f'El usuario {request.user.username} ha solicitado eliminar la asignatura "{asignatura.nombre}".',
+                from_email='noreply@micolegio.com',
+                recipient_list=[admin_user.email],
+                fail_silently=True,
+            )
+
+        messages.info(request, "Solicitud enviada al administrador.")
+
+    return redirect('asignatura_list')
+
+@login_required
+@solo_padres_y_admins
+
+def aprobar_eliminacion_asignatura(request, pk):
+    asignatura = get_object_or_404(Asignatura, pk=pk)
+    SolicitudEliminacionAsignatura.objects.filter(asignatura=asignatura, procesado=False).update(procesado=True)
+    asignatura.delete()
+    messages.success(request, "Asignatura eliminada y solicitud procesada.")
+    return redirect('panel_admin_asignaturas')
+
+@login_required
+@solo_padres_y_admins
+
+def rechazar_eliminacion_asignatura(request, pk):
+    asignatura = get_object_or_404(Asignatura, pk=pk)
+    SolicitudEliminacionAsignatura.objects.filter(asignatura=asignatura, procesado=False).update(procesado=True)
+    messages.info(request, "Solicitud de eliminación rechazada.")
+    return redirect('panel_admin_asignaturas')
+
+
+@login_required
+@solo_padres_y_admins
+
 def asignatura_delete(request, pk):
     asignatura = get_object_or_404(Asignatura, pk=pk)
+
     if request.method == 'POST':
         asignatura.delete()
+        messages.success(request, "Asignatura eliminada correctamente.")
         return redirect('asignatura_list')
+
     return render(request, 'gestion/asignatura_confirm_delete.html', {'asignatura': asignatura})
+
 
 User = get_user_model()
 
 # Vistas para CRUD de Alumnos
 @login_required
 @solo_padres_y_admins
+
 def alumno_create(request):
     if request.method == 'POST':
         form = AlumnoForm(request.POST)
@@ -347,7 +524,7 @@ def alumno_create(request):
 
             # Crear usuario asociado
             username = alumno.nombre.lower().replace(" ", "_")
-            password = User.objects.make_random_password()  # O asigna una fija tipo 'colegio123'
+            password = 'colegio123'
 
             usuario = User.objects.create(
                 username=username,
@@ -377,6 +554,7 @@ def alumno_create(request):
 
 @login_required
 @solo_padres_y_admins
+
 def alumno_list(request):
     curso_filtro = request.GET.get('curso')
     buscar = request.GET.get('buscar', '')
@@ -401,6 +579,7 @@ def alumno_list(request):
 
 @login_required
 @solo_padres_y_admins
+
 def alumno_edit(request, pk):
     alumno = get_object_or_404(Alumno, pk=pk)
 
@@ -418,7 +597,81 @@ def alumno_edit(request, pk):
     return render(request, 'gestion/alumno_form.html', {'form': form})
 
 @login_required
+@solo_padres_y_admins
+
+def solicitar_eliminacion_alumno(request, pk):
+    alumno = get_object_or_404(Alumno, pk=pk)
+
+    # Solo el padre del alumno o el staff puede solicitar
+    if not request.user.is_staff and alumno.padre != request.user:
+        return HttpResponseForbidden("No tienes permiso para solicitar la eliminación de este alumno.")
+
+    ya_solicitada = SolicitudEliminacionAlumno.objects.filter(
+        alumno=alumno,
+        solicitante=request.user,
+        procesado=False
+    ).exists()
+
+    if ya_solicitada:
+        messages.warning(request, "Ya has solicitado la eliminación de este alumno.")
+    else:
+        SolicitudEliminacionAlumno.objects.create(
+            alumno=alumno,
+            solicitante=request.user,
+        )
+
+        # Enviar correo al superusuario
+        admin_user = User.objects.filter(is_superuser=True).first()
+        if admin_user and admin_user.email:
+            send_mail(
+                subject='Solicitud de eliminación de alumno',
+                message=f'El usuario {request.user.username} ha solicitado eliminar al alumno "{alumno.nombre}".',
+                from_email='noreply@micolegio.com',
+                recipient_list=[admin_user.email],
+                fail_silently=True,
+            )
+
+        messages.info(request, "Solicitud enviada al administrador.")
+
+    return redirect('alumno_list')
+
+@login_required
+@solo_padres_y_admins
+
+def enviar_notificacion(usuario, mensaje):
+    if usuario.email:
+        send_mail(
+            subject="Nueva solicitud",
+            message=mensaje,
+            from_email="noreply@micolegio.com",
+            recipient_list=[usuario.email],
+            fail_silently=True,
+        )
+
+
+@login_required
+@solo_padres_y_admins
+
+def aprobar_eliminacion_alumno(request, pk):
+    alumno = get_object_or_404(Alumno, pk=pk)
+    SolicitudEliminacionAlumno.objects.filter(alumno=alumno, procesado=False).update(procesado=True)
+    alumno.delete()
+    messages.success(request, "Alumno eliminado y solicitud procesada.")
+    return redirect('panel_admin_alumnos')
+
+@login_required
+@solo_admins
+
+def rechazar_eliminacion_alumno(request, pk):
+    alumno = get_object_or_404(Alumno, pk=pk)
+    SolicitudEliminacionAlumno.objects.filter(alumno=alumno, procesado=False).update(procesado=True)
+    messages.info(request, "Solicitud de eliminación rechazada.")
+    return redirect('panel_admin_alumnos')
+
+
+@login_required
 @solo_padres_y_admins  # Antes: solo_admins
+
 def alumno_delete(request, pk):
     alumno = get_object_or_404(Alumno, pk=pk)
 
@@ -433,6 +686,7 @@ def alumno_delete(request, pk):
 
 @login_required
 @solo_admins
+
 def panel_admin_padres(request):
     padres = Usuario.objects.filter(tipo='padre').prefetch_related('hijos')
     return render(request, 'gestion/panel_admin_padres.html', {
@@ -441,6 +695,7 @@ def panel_admin_padres(request):
 
 @login_required
 @solo_admins
+
 def panel_admin_alumnos(request):
     alumnos = Alumno.objects.select_related('usuario').all()
 
@@ -448,3 +703,17 @@ def panel_admin_alumnos(request):
         'alumnos': alumnos,
     }
     return render(request, 'gestion/panel_admin_alumnos.html', context)
+
+@login_required
+@solo_admins
+
+def lista_solicitudes(request):
+    solicitudes_alumnos = SolicitudEliminacionAlumno.objects.all().order_by('-fecha_solicitud')
+    solicitudes_archivos = SolicitudEliminacionArchivo.objects.all().order_by('-fecha_solicitud')
+    solicitudes_asignaturas = SolicitudEliminacionAsignatura.objects.all().order_by('-fecha_solicitud')
+
+    return render(request, 'gestion/lista_solicitudes.html', {
+        'solicitudes_alumnos': solicitudes_alumnos,
+        'solicitudes_archivos': solicitudes_archivos,
+        'solicitudes_asignaturas': solicitudes_asignaturas,
+    })

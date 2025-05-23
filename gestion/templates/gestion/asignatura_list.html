@@ -16,8 +16,13 @@
     <tr>
         <td>{{ asignatura.nombre }}</td>
         <td>
-            <a class= "btn btn-editar" href="{% url 'asignatura_edit' asignatura.pk %}">✏️ Editar</a>
-            <a class= "btn-eliminar" href="{% url 'asignatura_delete' asignatura.pk %}">🗑️ Eliminar</a>
+            {% if user.is_superuser %}
+                <a href="{% url 'editar_alumno' alumno.id %}">✏️ Editar</a> |
+                <a href="{% url 'eliminar_alumno' alumno.id %}" onclick="return confirm('¿Seguro que deseas eliminar este alumno?')">🗑️ Eliminar</a>
+            {% else %}
+                <a href="{% url 'editar_alumno' alumno.id %}">✏️ Editar</a> |
+                <a href="{% url 'solicitar_eliminacion_alumno' alumno.id %}">📩 Solicitar eliminación</a>
+            {% endif %}
         </td>
     </tr>
     {% endfor %}

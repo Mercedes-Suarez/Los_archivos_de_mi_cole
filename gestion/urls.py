@@ -18,6 +18,7 @@ urlpatterns = [
     path('archivo/<int:id>/ver/', views.archivo_ver, name='archivo_ver'),
     path('archivo/editar/<int:pk>', views.archivo_editar, name='archivo_editar'),
     path('archivo/<int:pk>/eliminar/', archivo_delete, name='archivo_delete'),
+    path('archivo/<int:pk>/solicitar_eliminacion_archivo/', views.solicitar_eliminacion_archivo, name='solicitar_eliminacion_archivo'),
   
     # Gestión de asignaturas
     
@@ -32,7 +33,8 @@ urlpatterns = [
     path('alumnos/nuevo/', views.alumno_create, name='alumno_create'),
     path('alumnos/<int:pk>/editar/', views.alumno_edit, name='alumno_edit'),
     path('alumnos/<int:pk>/eliminar/', views.alumno_delete, name='alumno_delete'),
-
+    path('alumnos/<int:pk>/solicitar_eliminacion_alumno/', views.solicitar_eliminacion_alumno, name='solicitar_eliminacion_alumno'),
+  
     path('panel/alumnos/', views.panel_admin_alumnos, name='panel_admin_alumnos'),
 
     # Gestion de padres
@@ -41,6 +43,11 @@ urlpatterns = [
     path('padres/crear/', views.padre_create, name='padre_create'),
     path('padres/<int:pk>/editar/', views.padre_update, name='padre_edit'),
     path('padres/<int:pk>/eliminar/', views.padre_delete, name='padre_delete'),
+
+    path('solicitudes/', views.lista_solicitudes, name='lista_solicitudes'),
+    path('alumnos/<int:pk>/solicitar-eliminacion/', views.solicitar_eliminacion_alumno, name='solicitar_eliminacion_alumno'),
+    path('alumnos/<int:pk>/aprobar-eliminacion/', views.aprobar_eliminacion_alumno, name='aprobar_eliminacion_alumno'),
+    path('alumnos/<int:pk>/rechazar-eliminacion/', views.rechazar_eliminacion_alumno, name='rechazar_eliminacion_alumno'),
 
 ]
 
