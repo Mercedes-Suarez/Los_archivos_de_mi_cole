@@ -44,21 +44,32 @@ class ArchivoForm(forms.ModelForm):
         fields = ['archivo', 'enlace_externo', 'asignatura', 'trimestre', 'curso']
 
     def clean(self):
-        cleaned_data = super().clean()
-        archivo = cleaned_data.get('archivo')
-        enlace = cleaned_data.get('enlace_externo')
-        curso = cleaned_data.get('curso')
+     cleaned_data = super().clean()
+     archivo = cleaned_data.get('archivo')
+     enlace = cleaned_data.get('enlace_externo')
+     curso = cleaned_data.get('curso')
+     asignatura = cleaned_data.get('asignatura')
+     nueva_asignatura = cleaned_data.get('nueva_asignatura')
 
-        if not archivo and not enlace:
-            raise forms.ValidationError("Debes subir un archivo o proporcionar un enlace.")
+     if not archivo and not enlace:
+        raise forms.ValidationError("Debes subir un archivo o proporcionar un enlace.")
 
-        if not archivo and not curso:
-            raise forms.ValidationError("Debes señalar un curso.")
+     if asignatura == '__nueva__':
+        if nueva_asignatura:
+            asignatura_obj, _ = Asignatura.objects.get_or_create(nombre=nueva_asignatura)
+            cleaned_data['asignatura'] = asignatura_obj
+        else:
+            self.add_error('nueva_asignatura', "Debes indicar un nombre para la nueva asignatura.")
+    # 🟡 Si el usuario no elige __nueva__, no se hace nada — correcto
 
-        if archivo and archivo.size > 20 * 1024 * 1024:
-            raise forms.ValidationError("El archivo es demasiado grande (20MB máx.). Usa un enlace externo.")
-        
-        return cleaned_data
+     if not archivo and not curso:
+        raise forms.ValidationError("Debes señalar un curso.")
+
+     if archivo and archivo.size > 20 * 1024 * 1024:
+        raise forms.ValidationError("El archivo es demasiado grande (20MB máx.). Usa un enlace externo.")
+    
+     return cleaned_data
+
 
 class AsignaturaForm(forms.ModelForm):
     class Meta:

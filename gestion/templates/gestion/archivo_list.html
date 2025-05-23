@@ -4,8 +4,11 @@
 <div id="main-content">
 
 {% block content %}
+{% load custom_filters %}
+
+
 <h2>Listado de Archivos</h2>
-{% if user.is_staff %}
+{% if user.is_staff or is_padre %}
     <a href="{% url 'archivo_create' %}">📥 Subir nuevo archivo</a>
 {% endif %}
 <p>Sesión iniciada como: {{ user.username }}</p>
@@ -66,19 +69,32 @@
     </tr>
 </thead>
 </tbody>
+{% for archivo in archivos %}
+<tr>
+    <td>
+        {% if archivo.archivo %}
+            <a href="{{ archivo.archivo.url }}" target="_blank">
+                {{ archivo.archivo.name|cut:"archivos/" }}</a>
 
-  {% for archivo in archivos %}
-    <tr>
-      <td>  
-       {% if user.is_superuser %}
-            <a href="{% url 'editar_alumno' alumno.id %}">✏️ Editar</a> |
-            <a href="{% url 'eliminar_alumno' alumno.id %}" onclick="return confirm('¿Seguro que deseas eliminar este alumno?')">🗑️ Eliminar</a>
+        {% elif archivo.enlace_externo %}
+            <a href="{{ archivo.enlace_externo }}" target="_blank">🔗 Enlace externo</a>
         {% else %}
-            <a href="{% url 'editar_alumno' alumno.id %}">✏️ Editar</a> |
-            <a href="{% url 'solicitar_eliminacion_alumno' alumno.id %}">📩 Solicitar eliminación</a>
+            Sin archivo
         {% endif %}
-      </td>  
-    </tr>
+    </td>
+    <td>{{ archivo.asignatura }}</td>
+    <td>{{ archivo.get_curso_display }}</td>
+    <td>{{ archivo.get_trimestre_display }}</td>
+    <td>
+        {% if user.is_superuser or archivo.subido_por == user %}
+            <a href="{% url 'archivo_editar' archivo.id %}">✏️ Editar</a>
+            <!-- <a href="{% url 'archivo_delete' archivo.id %}">🗑️ Eliminar</a> -->
+        {% else %}
+            <a href="{% url 'archivo_editar' archivo.id %}">✏️ Editar</a> |
+            <a href="{% url 'solicitar_eliminacion_archivo' archivo.id %}">📩 Solicitar eliminación</a>
+        {% endif %}
+    </td>
+</tr>
 {% endfor %}
 
 </table>

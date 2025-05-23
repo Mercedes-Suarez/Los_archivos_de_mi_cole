@@ -4,6 +4,8 @@
 <div id="main-content">
 {% block content %}
 <h2>Listado de Asignaturas</h2>
+<p>Sesión iniciada como: {{ user.username }}</p>
+
 <a href="{% url 'asignatura_create' %}">➕ Nueva asignatura</a>
 
 {% if asignaturas %}
@@ -17,11 +19,11 @@
         <td>{{ asignatura.nombre }}</td>
         <td>
             {% if user.is_superuser %}
-                <a href="{% url 'editar_alumno' alumno.id %}">✏️ Editar</a> |
-                <a href="{% url 'eliminar_alumno' alumno.id %}" onclick="return confirm('¿Seguro que deseas eliminar este alumno?')">🗑️ Eliminar</a>
+                <a href="{% url 'asignatura_edit' asignatura.id %}">✏️ Editar</a> |
+                <a href="{% url 'asignatura_delete' asignatura.id %}" onclick="return confirm('¿Seguro que deseas eliminar esta asignatura?')">🗑️ Eliminar</a>
             {% else %}
-                <a href="{% url 'editar_alumno' alumno.id %}">✏️ Editar</a> |
-                <a href="{% url 'solicitar_eliminacion_alumno' alumno.id %}">📩 Solicitar eliminación</a>
+                <a href="{% url 'asignatura_edit' asignatura.id %}">✏️ Editar</a> |
+                <a href="{% url 'solicitar_eliminacion_asignatura' asignatura.id %}">📩 Solicitar eliminación</a>
             {% endif %}
         </td>
     </tr>

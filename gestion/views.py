@@ -4,7 +4,7 @@ from django.core.files import File
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.shortcuts import render, redirect, get_object_or_404
-from gestion.decorators import solo_padres_y_admins, solo_admins
+from gestion.decorators import solo_admins_padres, solo_admins
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import logout, get_user_model
 from django.contrib.auth.models import User, Group
@@ -19,7 +19,8 @@ from win32com import client
 
 
 from .models import (
-    Archivo, Alumno, Asignatura, Padre, 
+    Archivo, Alumno, Asignatura, Padre,
+    Usuario, 
     SolicitudEliminacionArchivo, 
     SolicitudEliminacionAlumno, 
     SolicitudEliminacionAsignatura, 
@@ -34,16 +35,6 @@ class MiLoginView(LoginView):
     authentication_form = AuthenticationForm
 
 Usuario = get_user_model()
-
-def registro_usuario(request):
-    if request.method == 'POST':
-        form = RegistroForm(request.POST)
-        if form.is_valid():
-            form.save()
-            return redirect('login')
-    else:
-        form = RegistroForm()
-    return render(request, 'gestion/registro.html', {'form': form})
 
 # Solo permite acceso si el usuario es staff (admin)
 def es_admin(user):
@@ -91,12 +82,15 @@ def padre_create(request):
     return render(request, 'gestion/registro.html', {'form': form})
 
 #  Editar padre
-def padre_update(request, pk):
+def padre_edit(request, pk):
     padre = get_object_or_404(Usuario, pk=pk, tipo='padre')
-    form = PadreForm(request.POST or None, instance=padre)
-    if form.is_valid():
+    if request.method == 'POST':
+      form = PadreForm(request.POST or None, instance=padre)
+      if form.is_valid():
         form.save()
         return redirect('padre_list')
+    else:
+      form = PadreForm(instance=padre)  
     return render(request, 'gestion/padre_form.html', {'form': form})
 
 #  Eliminar padre
@@ -108,22 +102,18 @@ def padre_delete(request, pk):
         return redirect('padre_list')
     return render(request, 'gestion/padre_confirm_delete.html', {'padre': padre})
 
-
-
-
-
+@login_required
 def acceso_alumno(request):
-        usuario = request.user
-        try:
-            alumno = Alumno.objects.get(padre=usuario)
-            archivos = Archivo.objects.filter(curso=alumno.curso)
-        except Alumno.DoesNotExist:
-            alumno = None
-            archivos = None
+    if not hasattr(request.user, 'alumno'):
+        messages.error(request, "Este acceso es solo para alumnos.")
+        return redirect('inicio')
 
-        return render(request, 'gestion/acceso_alumno.html', {
-             'alumno': alumno,
-             'archivos': archivos
+    alumno = request.user.alumno
+    archivos = Archivo.objects.filter(curso=alumno.curso)
+
+    return render(request, 'gestion/acceso_alumno.html', {
+        'alumno': alumno,
+        'archivos': archivos
     })
 
 CURSOS_PRIMARIA = [
@@ -146,9 +136,10 @@ TRIMESTRES = [
 ]
 
 @login_required
-@solo_padres_y_admins
-
+@solo_admins_padres
 def archivo_list(request):
+    user = request.user
+    is_padre = (user.tipo == 'padre')
 
     archivos = Archivo.objects.all()
     asignaturas = Asignatura.objects.all()
@@ -156,26 +147,31 @@ def archivo_list(request):
     asignatura_actual = request.GET.get('asignatura', '')
     trimestre_actual = request.GET.get('trimestre', '')
     curso_actual = request.GET.get('curso', '')
-    
+       
     if asignatura_actual:
         archivos = archivos.filter(asignatura_id=asignatura_actual)
     if trimestre_actual:
         archivos = archivos.filter(trimestre=trimestre_actual)
     if curso_actual:
         archivos = archivos.filter(curso=curso_actual)
-    
-    context = {
+ 
+    if is_padre and not user.is_staff:
+        archivos = archivos.filter(subido_por=user)
 
+    context = {
+        'is_padre': is_padre,
         'archivos': archivos,
         'asignaturas': asignaturas,
         'asignatura_actual': asignatura_actual,
         'trimestre_actual': trimestre_actual,
         'curso_actual': curso_actual,
         'cursos_primaria': CURSOS_PRIMARIA,
-        'cursos_secundaria': CURSOS_SECUNDARIA
-           
+        'cursos_secundaria': CURSOS_SECUNDARIA,
+        
+        'extensiones_embed': EXTENSIONES_EMBED
     }
     return render(request, 'gestion/archivo_list.html', context)
+
 
 EXTENSIONES_EMBED = ["pptx", "docx"]
 
@@ -220,65 +216,72 @@ def convertir_ppsx_a_pptx(ruta_ppsx):
     return ruta_salida
 
 @login_required
-@solo_padres_y_admins
-
+@solo_admins_padres
 def archivo_create(request):
     if request.method == 'POST':
         form = ArchivoForm(request.POST, request.FILES)
         if form.is_valid(): 
             archivo = form.save(commit=False)
-            
-            if archivo.archivo and archivo.archivo.name.endswith('.ppsx'):
-                original = archivo.archivo
-                
-                # Ruta base del proyecto (donde está manage.py)
+            archivo.subido_por = request.user
+
+            original = archivo.archivo
+
+            if original and original.name.endswith('.ppsx'):
+                import uuid
+                from win32com import client
+                from django.core.files import File
+
                 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
                 temp_dir = os.path.join(BASE_DIR, 'temp_uploads')
+                os.makedirs(temp_dir, exist_ok=True)
 
-                # Crear carpeta si no existe
-                if not os.path.exists(temp_dir):
-                    os.makedirs(temp_dir)
+                filename = f"{uuid.uuid4()}.ppsx"
+                temp_path = os.path.join(temp_dir, filename)
 
-                # Construir ruta temporal para guardar archivo subido
-                temp_path = os.path.join(temp_dir, original.name)
+                try:
+                    with open(temp_path, 'wb+') as temp_file:
+                        for chunk in original.chunks():
+                            temp_file.write(chunk)
 
-                # Guardar el archivo temporalmente
-                with open(temp_path, 'wb+') as temp_file:
-                    for chunk in original.chunks():
-                        temp_file.write(chunk)
+                    ppt_app = client.Dispatch("PowerPoint.Application")
+                    ppt_app.Visible = 1
+                    presentation = ppt_app.Presentations.Open(temp_path, WithWindow=False)
+                    ruta_convertido = temp_path.replace(".ppsx", ".pptx")
+                    presentation.SaveAs(ruta_convertido, 24)
+                    presentation.Close()
+                    ppt_app.Quit()
 
-                # Convertir .ppsx a .pptx con PowerPoint
-                from win32com import client
-                ppt_app = client.Dispatch("PowerPoint.Application")
-                ppt_app.Visible = 1
-                presentation = ppt_app.Presentations.Open(temp_path, WithWindow=False)
-                ruta_convertido = temp_path.replace(".ppsx", ".pptx")
-                presentation.SaveAs(ruta_convertido, 24)
-                presentation.Close()
-                ppt_app.Quit()
+                    with open(ruta_convertido, 'rb') as f:
+                        archivo.archivo.save(original.name.replace('.ppsx', '.pptx'), File(f), save=False)
 
-                from django.core.files import File
-                with open(ruta_convertido, 'rb') as f:
-                    archivo.archivo.save(original.name.replace('.ppsx', '.pptx'), File(f), save=False)
+                except Exception as e:
+                    # Opcional: registrar el error o mostrar mensaje
+                    print(f"Error al convertir el archivo: {e}")
+                    form.add_error('archivo', 'Error al convertir el archivo PPSX. Intente con un archivo válido.')
+                    return render(request, 'gestion/archivo_form.html', {'form': form})
 
-                # Eliminar archivos temporales
-                os.remove(temp_path)
-                os.remove(ruta_convertido)
+                finally:
+                    if os.path.exists(temp_path):
+                        os.remove(temp_path)
+                    if os.path.exists(ruta_convertido):
+                        os.remove(ruta_convertido)
 
-            # Guardar el objeto final
             archivo.save()
             return redirect('archivo_list')
-        
         else:
             return render(request, 'gestion/archivo_form.html', {'form': form})
     else:
         form = ArchivoForm()
         return render(request, 'gestion/archivo_form.html', {'form': form})
 
+
 @login_required
-@solo_padres_y_admins
+@solo_admins_padres
 
 def archivo_editar(request, pk):
+    if not request.user.is_staff and archivo.subido_por != request.user:
+        return HttpResponseForbidden("No tienes permiso para editar este archivo.")
+
     archivo = get_object_or_404(Archivo, pk=pk)
     if request.method == 'POST':
         form = ArchivoForm(request.POST, request.FILES, instance=archivo)
@@ -289,40 +292,8 @@ def archivo_editar(request, pk):
         form = ArchivoForm(instance=archivo)
     return render(request, 'gestion/archivo_editar.html', {'form': form})
 
-def solicitar_eliminacion_archivo(request, archivo_id):
-    archivo = get_object_or_404(Archivo, id=archivo_id)
-
-    ya_solicitada = SolicitudEliminacionArchivo.objects.filter(
-        archivo=archivo,
-        solicitante=request.user,
-        procesado=False
-    ).exists()
-
-    if ya_solicitada:
-        messages.warning(request, "Ya has solicitado la eliminación de este archivo.")
-    else:
-        SolicitudEliminacionArchivo.objects.create(
-            archivo=archivo,
-            solicitante=request.user,
-        )
-
-        # Enviar correo al superusuario
-        admin_user = User.objects.filter(is_superuser=True).first()
-        if admin_user and admin_user.email:
-            send_mail(
-                subject='Solicitud de eliminación de archivo',
-                message=f'El usuario {request.user.username} ha solicitado eliminar el archivo "{archivo.nombre_archivo}".',
-                from_email='noreply@micolegio.com',
-                recipient_list=[admin_user.email],
-                fail_silently=True,
-            )
-
-        messages.info(request, "Solicitud enviada al administrador.")
-
-    return redirect('lista_archivos')
-
 @login_required
-@solo_padres_y_admins
+@solo_admins_padres
 
 def solicitar_eliminacion_archivo(request, pk):
     archivo = get_object_or_404(Archivo, pk=pk)
@@ -359,7 +330,7 @@ def solicitar_eliminacion_archivo(request, pk):
     return redirect('archivo_list')  # Asegúrate de tener esta vista/URL
 
 @login_required
-@solo_padres_y_admins
+@solo_admins_padres
 
 def aprobar_eliminacion_archivo(request, pk):
     archivo = get_object_or_404(Archivo, pk=pk)
@@ -369,7 +340,7 @@ def aprobar_eliminacion_archivo(request, pk):
     return redirect('panel_admin_archivos')  # Define esta URL
 
 @login_required
-@solo_padres_y_admins
+@solo_admins_padres
 
 def rechazar_eliminacion_archivo(request, pk):
     archivo = get_object_or_404(Archivo, pk=pk)
@@ -378,7 +349,7 @@ def rechazar_eliminacion_archivo(request, pk):
     return redirect('panel_admin_archivos')
 
 @login_required
-@solo_padres_y_admins
+@solo_admins_padres
 def archivo_delete(request, pk):
     archivo = get_object_or_404(Archivo, pk=pk)
 
@@ -395,7 +366,7 @@ def archivo_delete(request, pk):
 
 
 @login_required
-@solo_padres_y_admins
+@solo_admins_padres
 
 def asignatura_create(request):
         if request.method == 'POST':
@@ -411,8 +382,7 @@ def asignatura_create(request):
         return render(request, "gestion/asignatura_crear.html", {"form": form})
 
 @login_required
-@solo_padres_y_admins
-
+@solo_admins_padres
 def asignatura_edit(request, pk):
     asignatura = get_object_or_404(Asignatura, pk=pk)
     if request.method == "POST":
@@ -435,16 +405,14 @@ def asignatura_edit(request, pk):
 
 
 @login_required
-@solo_padres_y_admins
-
+@solo_admins_padres
 def asignatura_list(request):
     asignaturas = Asignatura.objects.all()
     return render(request, 'gestion/asignatura_list.html', {'asignaturas': asignaturas})
 
 
 @login_required
-@solo_padres_y_admins
-
+@solo_admins_padres
 def solicitar_eliminacion_asignatura(request, pk):
     asignatura = get_object_or_404(Asignatura, pk=pk)
 
@@ -477,7 +445,7 @@ def solicitar_eliminacion_asignatura(request, pk):
     return redirect('asignatura_list')
 
 @login_required
-@solo_padres_y_admins
+@solo_admins_padres
 
 def aprobar_eliminacion_asignatura(request, pk):
     asignatura = get_object_or_404(Asignatura, pk=pk)
@@ -487,7 +455,7 @@ def aprobar_eliminacion_asignatura(request, pk):
     return redirect('panel_admin_asignaturas')
 
 @login_required
-@solo_padres_y_admins
+@solo_admins_padres
 
 def rechazar_eliminacion_asignatura(request, pk):
     asignatura = get_object_or_404(Asignatura, pk=pk)
@@ -497,7 +465,7 @@ def rechazar_eliminacion_asignatura(request, pk):
 
 
 @login_required
-@solo_padres_y_admins
+@solo_admins_padres
 
 def asignatura_delete(request, pk):
     asignatura = get_object_or_404(Asignatura, pk=pk)
@@ -514,46 +482,48 @@ User = get_user_model()
 
 # Vistas para CRUD de Alumnos
 @login_required
-@solo_padres_y_admins
-
+@solo_admins_padres
 def alumno_create(request):
     if request.method == 'POST':
         form = AlumnoForm(request.POST)
         if form.is_valid():
             alumno = form.save(commit=False)
 
-            # Crear usuario asociado
-            username = alumno.nombre.lower().replace(" ", "_")
+            # Crear nombre de usuario único
+            username_base = alumno.nombre.lower().replace(" ", "_")
+            username = username_base
+            contador = 1
+            while Usuario.objects.filter(username=username).exists():
+                username = f"{username_base}_{contador}"
+                contador += 1
+
             password = 'colegio123'
 
-            usuario = User.objects.create(
+            usuario = Usuario.objects.create_user(
                 username=username,
-                password=make_password(password),
-                email="",  # Opcional
+                password=password,
+                email=""
             )
 
-            # Marcar como alumno
-            usuario.es_alumno = True
+            usuario.tipo = 'alumno'
+            usuario.is_active = True
             usuario.save()
 
-            # Enlazar con el alumno
             alumno.usuario = usuario
 
-            # ✅ Enlazar el alumno al padre (usuario actual)
             if not request.user.is_staff:
                 alumno.padre = request.user
-          
+
             alumno.save()
 
-            return redirect('alumno_list')  # ← Este redirect es clave para evitar reenviar formulario
+            return redirect('alumno_list')
     else:
-
         form = AlumnoForm()
 
     return render(request, 'gestion/alumno_form.html', {'form': form})
 
 @login_required
-@solo_padres_y_admins
+@solo_admins_padres
 
 def alumno_list(request):
     curso_filtro = request.GET.get('curso')
@@ -578,7 +548,7 @@ def alumno_list(request):
     })
 
 @login_required
-@solo_padres_y_admins
+@solo_admins_padres
 
 def alumno_edit(request, pk):
     alumno = get_object_or_404(Alumno, pk=pk)
@@ -597,7 +567,7 @@ def alumno_edit(request, pk):
     return render(request, 'gestion/alumno_form.html', {'form': form})
 
 @login_required
-@solo_padres_y_admins
+@solo_admins_padres
 
 def solicitar_eliminacion_alumno(request, pk):
     alumno = get_object_or_404(Alumno, pk=pk)
@@ -636,7 +606,7 @@ def solicitar_eliminacion_alumno(request, pk):
     return redirect('alumno_list')
 
 @login_required
-@solo_padres_y_admins
+@solo_admins_padres
 
 def enviar_notificacion(usuario, mensaje):
     if usuario.email:
@@ -650,7 +620,7 @@ def enviar_notificacion(usuario, mensaje):
 
 
 @login_required
-@solo_padres_y_admins
+@solo_admins_padres
 
 def aprobar_eliminacion_alumno(request, pk):
     alumno = get_object_or_404(Alumno, pk=pk)
@@ -670,7 +640,7 @@ def rechazar_eliminacion_alumno(request, pk):
 
 
 @login_required
-@solo_padres_y_admins  # Antes: solo_admins
+@solo_admins_padres  # Antes: solo_admins
 
 def alumno_delete(request, pk):
     alumno = get_object_or_404(Alumno, pk=pk)

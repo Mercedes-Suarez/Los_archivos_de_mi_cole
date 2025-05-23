@@ -17,12 +17,16 @@ TRIMESTRES = [
 
 class Usuario(AbstractUser):
 
-    tipo = models.CharField(max_length=10, choices=[('alumno', 'Alumno'), ('padre', 'Padre'), ('admin', 'Administrador')])
+    tipo = models.CharField(max_length=10, choices=[
+        ('alumno', 'Alumno'), 
+        ('padre', 'Padre'), 
+        ('admin', 'Administrador')
+    ])
     fecha_creacion = models.DateTimeField(default=timezone.now)
 
 # Padre vinculado al usuario
 class Padre(models.Model):
-    usuario = models.OneToOneField(Usuario, on_delete=models.CASCADE, related_name='padre')
+    usuario = models.OneToOneField('gestion.Usuario', on_delete=models.CASCADE, related_name='padre')
     nombre = models.CharField(max_length=100)
 
     def __str__(self):

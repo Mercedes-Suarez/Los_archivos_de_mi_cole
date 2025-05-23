@@ -1,17 +1,40 @@
+{% extends "gestion/base.html" %}
+
+{% block content %}
 <h2>Listado de Padres</h2>
-<a href="{% url 'padre_create' %}">Crear nuevo padre</a>
-<ul>
-  {% for padre in padres %}
-    
-      <td>
-         {{ padre.username }} - {{ padre.email }}
-          {% if user.is_superuser %}
-           <a href="{% url 'editar_alumno' alumno.id %}">✏️ Editar</a> |
-           <a href="{% url 'eliminar_alumno' alumno.id %}" onclick="return confirm('¿Seguro que deseas eliminar este alumno?')">🗑️ Eliminar</a>
-         {% else %}
-           <a href="{% url 'editar_alumno' alumno.id %}">✏️ Editar</a> |
-           <a href="{% url 'solicitar_eliminacion_alumno' alumno.id %}">📩 Solicitar eliminación</a>
-          {% endif %}
-      </td>
-  {% endfor %}
-</ul>
+
+<p>Sesión iniciada como: {{ user.username }}</p>
+
+<a href="{% url 'padre_create' %}" class="btn btn-primary">➕ Nuevo Padre</a>
+
+<table border="1" cellspacing="0" cellpadding="5">
+    <thead>
+        <tr>
+            <th>Nombre de Usuario</th>
+            <th>Email</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for padre in padres %}
+        <tr>
+            <td>{{ padre.username }}</td>
+            <td>{{ padre.email }}</td>
+            <td>
+                <a href="{% url 'padre_edit' padre.id %}">✏️ Editar</a> |
+                {% if user.is_superuser %}
+                    <a href="{% url 'padre_delete' padre.id %}" onclick="return confirm('¿Seguro que deseas eliminar este padre?')">🗑️ Eliminar</a>
+                {% else %}
+                    <a href="{% url 'solicitar_eliminacion_padre' padre.id %}">📩 Solicitar eliminación</a>
+                {% endif %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="3">No hay padres registrados.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+
